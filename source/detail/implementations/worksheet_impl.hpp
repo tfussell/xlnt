@@ -143,9 +143,8 @@ struct worksheet_impl
     optional<phonetic_pr> phonetic_properties_;
     optional<header_footer> header_footer_;
 
-    std::string print_title_cols_;
-    std::string print_title_rows_;
-
+    optional<std::pair<column_t, column_t>> print_title_cols_;
+    optional<std::pair<row_t, row_t>> print_title_rows_;
     optional<range_reference> print_area_;
 
     std::vector<sheet_view> views_;

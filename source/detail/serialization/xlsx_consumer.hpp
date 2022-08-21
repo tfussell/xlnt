@@ -56,6 +56,7 @@ namespace detail {
 
 class izstream;
 struct cell_impl;
+struct defined_name;
 struct worksheet_impl;
 
 /// <summary>
@@ -424,6 +425,8 @@ private:
 
     detail::worksheet_impl *current_worksheet_;
     number_serialiser converter_;
+    
+    std::vector<defined_name> defined_names_;
 };
 
 } // namespace detail

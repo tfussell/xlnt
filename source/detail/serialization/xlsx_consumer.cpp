@@ -41,6 +41,7 @@
 #include <detail/header_footer/header_footer_code.hpp>
 #include <detail/implementations/workbook_impl.hpp>
 #include <detail/serialization/custom_value_traits.hpp>
+#include <detail/serialization/defined_name.hpp>
 #include <detail/serialization/serialisation_helpers.hpp>
 #include <detail/serialization/vector_streambuf.hpp>
 #include <detail/serialization/xlsx_consumer.hpp>
@@ -448,6 +449,70 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
     }
 }
 
+void read_defined_names(worksheet ws, std::vector<defined_name> defined_names)
+{
+    for (auto &name : defined_names)
+    {
+        if (name.sheet_id != ws.id() - 1)
+        {
+            continue;
+        }
+        
+        if (name.name == "_xlnm.Print_Titles")
+        {
+            // Basic print titles parser
+            // A print title definition looks like "'Sheet3'!$B:$E,'Sheet3'!$2:$4"
+            // There are three cases: columns only, rows only, and both (separated by a comma).
+            // For this reason, we loop up to two times parsing each component.
+            // Titles may be quoted (with single quotes) or unquoted. We ignore them for now anyways.
+            // References are always absolute.
+            // Move this into a separate function if it needs to be used in other places.
+            auto i = std::size_t(0);
+            for (auto count = 0; count < 2; count++)
+            {
+                // Split into components based on "!", ":", and "," characters
+                auto j = i;
+                i = name.value.find("!", j);
+                auto title = name.value.substr(j, i - j);
+                j = i + 2; // skip "!$"
+                i = name.value.find(":", j);
+                auto from = name.value.substr(j, i - j);
+                j = i + 2; // skip ":$"
+                i = name.value.find(",", j);
+                auto to = name.value.substr(j, i - j);
+
+                // Apply to the worksheet
+                if (isalpha(from.front())) // alpha=>columns
+                {
+                    ws.print_title_cols(from, to);
+                }
+                else // numeric=>rows
+                {
+                    ws.print_title_rows(std::stoul(from), std::stoul(to));
+                }
+                
+                // Check for end condition
+                if (i == std::string::npos)
+                {
+                    break;
+                }
+
+                i++; // skip "," for next iteration
+            }
+        }
+        else if (name.name == "_xlnm._FilterDatabase")
+        {
+            auto i = name.value.find("!");
+            ws.auto_filter(name.value.substr(i + 1));
+        }
+        else if (name.name == "_xlnm.Print_Area")
+        {
+            auto i = name.value.find("!");
+            ws.print_area(name.value.substr(i + 1));
+        }
+    }
+}
+
 std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
 {
     if (streaming_ && streaming_cell_ == nullptr)
@@ -468,6 +533,8 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
 
     expect_start_element(qn("spreadsheetml", "worksheet"), xml::content::complex); // CT_Worksheet
     skip_attributes({qn("mc", "Ignorable")});
+    
+    read_defined_names(ws, defined_names_);
 
     while (in_element(qn("spreadsheetml", "worksheet")))
     {
@@ -2015,7 +2082,24 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
         }
         else if (current_workbook_element == qn("workbook", "definedNames")) // CT_DefinedNames 0-1
         {
-            skip_remaining_content(current_workbook_element);
+            while (in_element(qn("workbook", "definedNames")))
+            {
+                expect_start_element(qn("spreadsheetml", "definedName"), xml::content::mixed);
+
+                defined_name name;
+                name.name = parser().attribute("name");
+                name.sheet_id = parser().attribute<std::size_t>("localSheetId");
+                name.hidden = false;
+                if (parser().attribute_present("hidden"))
+                {
+                    name.hidden = is_true(parser().attribute("hidden"));
+                }
+                parser().attribute_map(); // skip remaining attributes
+                name.value = read_text();
+                defined_names_.push_back(name);
+                
+                expect_end_element(qn("spreadsheetml", "definedName"));
+            }
         }
         else if (current_workbook_element == qn("workbook", "calcPr")) // CT_CalcPr 0-1
         {
@@ -2123,14 +2207,14 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
             target_.d_->sheet_title_rel_id_map_.end(),
             [&](const std::pair<std::string, std::string> &p) {
                 return p.second == worksheet_rel.id();
-            })
-                         ->first;
+            })->first;
 
         auto id = sheet_title_id_map_[title];
         auto index = sheet_title_index_map_[title];
 
         auto insertion_iter = target_.d_->worksheets_.begin();
-        while (insertion_iter != target_.d_->worksheets_.end() && sheet_title_index_map_[insertion_iter->title_] < index)
+        while (insertion_iter != target_.d_->worksheets_.end()
+            && sheet_title_index_map_[insertion_iter->title_] < index)
         {
             ++insertion_iter;
         }

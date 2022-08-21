@@ -52,7 +52,6 @@ public:
         register_test(test_no_cols);
         register_test(test_one_cell);
         register_test(test_cols);
-        register_test(test_auto_filter);
         register_test(test_getitem);
         register_test(test_setitem);
         register_test(test_getslice);
@@ -62,9 +61,7 @@ public:
         register_test(test_merge_range_string);
         register_test(test_unmerge_bad);
         register_test(test_unmerge_range_string);
-        register_test(test_print_titles_old);
-        register_test(test_print_titles_new);
-        register_test(test_print_area);
+        register_test(test_defined_names);
         register_test(test_freeze_panes_horiz);
         register_test(test_freeze_panes_vert);
         register_test(test_freeze_panes_both);
@@ -303,21 +300,6 @@ public:
         xlnt_assert_equals(cols[2][8].value<std::string>(), "last");
     }
 
-    void test_auto_filter()
-    {
-        xlnt::workbook wb;
-        auto ws = wb.active_sheet();
-
-        ws.auto_filter(ws.range("a1:f1"));
-        xlnt_assert_equals(ws.auto_filter(), "A1:F1");
-
-        ws.clear_auto_filter();
-        xlnt_assert(!ws.has_auto_filter());
-
-        ws.auto_filter("c1:g9");
-        xlnt_assert_equals(ws.auto_filter(), "C1:G9");
-    }
-
     void test_getitem()
     {
         xlnt::workbook wb;
@@ -416,43 +398,53 @@ public:
         xlnt_assert_equals(ws.merged_ranges().size(), 0);
     }
 
-    void test_print_titles_old()
+    void test_defined_names()
     {
         xlnt::workbook wb;
+        wb.load(path_helper::test_file("19_defined_names.xlsx"));
+        
+        auto ws1 = wb.sheet_by_index(0);
 
-        auto ws = wb.active_sheet();
-        ws.print_title_rows(3);
-        xlnt_assert_equals(ws.print_titles(), "Sheet1!1:3");
+        xlnt_assert(!ws1.has_print_area());
 
-        auto ws2 = wb.create_sheet();
-        ws2.print_title_cols(4);
-        xlnt_assert_equals(ws2.print_titles(), "Sheet2!A:D");
-    }
+        xlnt_assert(ws1.has_auto_filter());
+        xlnt_assert_equals(ws1.auto_filter().to_string(), "A1:A6");
 
-    void test_print_titles_new()
-    {
-        xlnt::workbook wb;
+        xlnt_assert(ws1.has_print_titles());
+        xlnt_assert(!ws1.print_title_cols().is_set());
+        xlnt_assert(ws1.print_title_rows().is_set());
+        xlnt_assert_equals(ws1.print_title_rows().get().first, 1);
+        xlnt_assert_equals(ws1.print_title_rows().get().second, 3);
+        
+        auto ws2 = wb.sheet_by_index(1);
 
-        auto ws = wb.active_sheet();
-        ws.print_title_rows(4);
-        xlnt_assert_equals(ws.print_titles(), "Sheet1!1:4");
+        xlnt_assert(ws2.has_print_area());
+        xlnt_assert_equals(ws2.print_area().to_string(), "$B$4:$B$4");
 
-        auto ws2 = wb.create_sheet();
-        ws2.print_title_cols("F");
-        xlnt_assert_equals(ws2.print_titles(), "Sheet2!A:F");
+        xlnt_assert(!ws2.has_auto_filter());
 
-        auto ws3 = wb.create_sheet();
-        ws3.print_title_rows(2, 3);
-        ws3.print_title_cols("C", "D");
-        xlnt_assert_equals(ws3.print_titles(), "Sheet3!2:3,Sheet3!C:D");
-    }
+        xlnt_assert(ws2.has_print_titles());
+        xlnt_assert(!ws2.print_title_rows().is_set());
+        xlnt_assert(ws2.print_title_cols().is_set());
+        xlnt_assert_equals(ws2.print_title_cols().get().first, "A");
+        xlnt_assert_equals(ws2.print_title_cols().get().second, "D");
+        
+        auto ws3 = wb.sheet_by_index(2);
 
-    void test_print_area()
-    {
-        xlnt::workbook wb;
-        auto ws = wb.active_sheet();
-        ws.print_area("A1:F5");
-        xlnt_assert_equals(ws.print_area(), "$A$1:$F$5");
+        xlnt_assert(ws3.has_print_area());
+        xlnt_assert_equals(ws3.print_area().to_string(), "$B$2:$E$4");
+
+        xlnt_assert(!ws3.has_auto_filter());
+
+        xlnt_assert(ws3.has_print_titles());
+        xlnt_assert(ws3.print_title_rows().is_set());
+        xlnt_assert(ws3.print_title_cols().is_set());
+        xlnt_assert_equals(ws3.print_title_cols().get().first, "B");
+        xlnt_assert_equals(ws3.print_title_cols().get().second, "E");
+        xlnt_assert_equals(ws3.print_title_rows().get().first, 2);
+        xlnt_assert_equals(ws3.print_title_rows().get().second, 4);
+
+        wb.save("titles1.xlsx");
     }
 
     void test_freeze_panes_horiz()
