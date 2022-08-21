@@ -1146,40 +1146,35 @@ worksheet::const_iterator worksheet::end() const
     return cend();
 }
 
-void worksheet::print_title_rows(row_t last_row)
+void worksheet::print_title_rows(row_t start, row_t end)
 {
-    print_title_rows(1, last_row);
+    d_->print_title_rows_ = std::make_pair(start, end);
 }
 
-void worksheet::print_title_rows(row_t first_row, row_t last_row)
+optional<std::pair<row_t, row_t>> worksheet::print_title_rows() const
 {
-    d_->print_title_rows_ = std::to_string(first_row) + ":" + std::to_string(last_row);
+    return d_->print_title_rows_;
 }
 
-void worksheet::print_title_cols(column_t last_column)
+void worksheet::print_title_cols(column_t start, column_t end)
 {
-    print_title_cols(1, last_column);
+    d_->print_title_cols_ = std::make_pair(start, end);
 }
 
-void worksheet::print_title_cols(column_t first_column, column_t last_column)
+optional<std::pair<column_t, column_t>> worksheet::print_title_cols() const
 {
-    d_->print_title_cols_ = first_column.column_string() + ":" + last_column.column_string();
+    return d_->print_title_cols_;
 }
 
-std::string worksheet::print_titles() const
+bool worksheet::has_print_titles() const
 {
-    if (!d_->print_title_rows_.empty() && !d_->print_title_cols_.empty())
-    {
-        return d_->title_ + "!" + d_->print_title_rows_ + "," + d_->title_ + "!" + d_->print_title_cols_;
-    }
-    else if (!d_->print_title_cols_.empty())
-    {
-        return d_->title_ + "!" + d_->print_title_cols_;
-    }
-    else
-    {
-        return d_->title_ + "!" + d_->print_title_rows_;
-    }
+    return d_->print_title_cols_.is_set() || d_->print_title_rows_.is_set();
+}
+
+void worksheet::clear_print_titles()
+{
+    d_->print_title_rows_.clear();
+    d_->print_title_cols_.clear();
 }
 
 void worksheet::print_area(const std::string &print_area)
@@ -1190,6 +1185,16 @@ void worksheet::print_area(const std::string &print_area)
 range_reference worksheet::print_area() const
 {
     return d_->print_area_.get();
+}
+
+bool worksheet::has_print_area() const
+{
+    return d_->print_area_.is_set();
+}
+
+void worksheet::clear_print_area()
+{
+    return d_->print_area_.clear();
 }
 
 bool worksheet::has_view() const

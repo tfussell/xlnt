@@ -41,6 +41,7 @@
 #include <detail/header_footer/header_footer_code.hpp>
 #include <detail/implementations/workbook_impl.hpp>
 #include <detail/serialization/custom_value_traits.hpp>
+#include <detail/serialization/defined_name.hpp>
 #include <detail/serialization/vector_streambuf.hpp>
 #include <detail/serialization/xlsx_producer.hpp>
 #include <detail/serialization/zstream.hpp>
@@ -432,7 +433,7 @@ void xlsx_producer::write_custom_properties(const relationship & /*rel*/)
 void xlsx_producer::write_workbook(const relationship &rel)
 {
     std::size_t num_visible = 0;
-    bool any_defined_names = false;
+    std::vector<defined_name> defined_names;
 
     for (auto ws : source_)
     {
@@ -440,10 +441,54 @@ void xlsx_producer::write_workbook(const relationship &rel)
         {
             num_visible++;
         }
-
+        
+        auto title_ref = "'" + ws.title() + "'!";
+        
         if (ws.has_auto_filter())
         {
-            any_defined_names = true;
+            defined_name name;
+            name.sheet_id = ws.id();
+            name.name = "_xlnm._FilterDatabase";
+            name.hidden = true;
+            name.value = title_ref + range_reference::make_absolute(ws.auto_filter()).to_string();
+            defined_names.push_back(name);
+        }
+        
+        if (ws.has_print_area())
+        {
+            defined_name name;
+            name.sheet_id = ws.id();
+            name.name = "_xlnm.Print_Area";
+            name.hidden = false;
+            name.value = title_ref + range_reference::make_absolute(ws.print_area()).to_string();
+            defined_names.push_back(name);
+        }
+        
+        if (ws.has_print_titles())
+        {
+            defined_name name;
+            name.sheet_id = ws.id();
+            name.name = "_xlnm.Print_Titles";
+            name.hidden = false;
+            
+            auto cols = ws.print_title_cols();
+            if (cols.is_set())
+            {
+                name.value = title_ref + "$" + cols.get().first.column_string()
+                    + ":" + "$" + cols.get().second.column_string();
+            }
+            auto rows = ws.print_title_rows();
+            if (rows.is_set())
+            {
+                if (!name.value.empty())
+                {
+                    name.value.push_back(',');
+                }
+                name.value += title_ref + "$" + std::to_string(rows.get().first)
+                    + ":" + "$" + std::to_string(rows.get().second);
+            }
+
+            defined_names.push_back(name);
         }
     }
 
@@ -612,16 +657,21 @@ void xlsx_producer::write_workbook(const relationship &rel)
 
     write_end_element(xmlns, "sheets");
 
-    if (any_defined_names)
+    if (!defined_names.empty())
     {
         write_start_element(xmlns, "definedNames");
-        /*
-        write_attribute("name", "_xlnm._FilterDatabase");
-        write_attribute("hidden", write_bool(true));
-        write_attribute("localSheetId", "0");
-        write_characters("'" + ws.title() + "'!" +
-            range_reference::make_absolute(ws.auto_filter()).to_string());
-        */
+        for (auto name : defined_names)
+        {
+            write_start_element(xmlns, "definedName");
+            write_attribute("name", name.name);
+            if (name.hidden)
+            {
+                write_attribute("hidden", write_bool(true));
+            }
+            write_attribute("localSheetId", std::to_string(name.sheet_id - 1)); // 0-indexed for some reason
+            write_characters(name.value);
+            write_end_element(xmlns, "definedName");
+        }
         write_end_element(xmlns, "definedNames");
     }
 

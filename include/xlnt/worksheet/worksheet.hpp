@@ -652,27 +652,32 @@ public:
     /// <summary>
     /// Sets rows to repeat at top during printing.
     /// </summary>
-    void print_title_rows(row_t first_row, row_t last_row);
+    void print_title_rows(row_t start, row_t end);
 
     /// <summary>
-    /// Sets rows to repeat at top during printing.
+    /// Get rows to repeat at top during printing.
     /// </summary>
-    void print_title_rows(row_t last_row);
-
-    /// <summary>
-    /// Sets columns to repeat at left during printing.
-    /// </summary>
-    void print_title_cols(column_t first_column, column_t last_column);
+    optional<std::pair<row_t, row_t>> print_title_rows() const;
 
     /// <summary>
     /// Sets columns to repeat at left during printing.
     /// </summary>
-    void print_title_cols(column_t last_column);
+    void print_title_cols(column_t start, column_t end);
+    
+    /// <summary>
+    /// Get columns to repeat at left during printing.
+    /// </summary>
+    optional<std::pair<column_t, column_t>> print_title_cols() const;
 
     /// <summary>
-    /// Returns a string representation of the defined print titles.
+    /// Returns true if the sheet has print titles defined.
     /// </summary>
-    std::string print_titles() const;
+    bool has_print_titles() const;
+
+    /// <summary>
+    /// Remove all print titles.
+    /// </summary>
+    void clear_print_titles();
 
     /// <summary>
     /// Sets the print area of this sheet to print_area.
@@ -680,9 +685,19 @@ public:
     void print_area(const std::string &print_area);
 
     /// <summary>
+    /// Clear the print area of this sheet.
+    /// </summary>
+    void clear_print_area();
+
+    /// <summary>
     /// Returns the print area defined for this sheet.
     /// </summary>
     range_reference print_area() const;
+    
+    /// <summary>
+    /// Returns true if the print area is defined for this sheet.
+    /// </summary>
+    bool has_print_area() const;
 
     /// <summary>
     /// Returns true if this sheet has any number of views defined.

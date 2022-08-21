@@ -117,9 +117,11 @@ public:
 
     void test_weekday()
     {
-        xlnt_assert_equals(xlnt::date(2000, 1, 1).weekday(), 6);
-        xlnt_assert_equals(xlnt::date(2016, 7, 15).weekday(), 5);
-        xlnt_assert_equals(xlnt::date(2018, 10, 29).weekday(), 1);
+        xlnt_assert_equals(xlnt::date(2000, 1, 1).weekday(), 6); // January 1st 2000 was a Saturday
+        xlnt_assert_equals(xlnt::date(2016, 7, 15).weekday(), 5); // July 15th 2016 was a Friday
+        xlnt_assert_equals(xlnt::date(2018, 10, 29).weekday(), 1); // October 29th 2018 was Monday
+        xlnt_assert_equals(xlnt::date(1970, 1, 1).weekday(), 4); // January 1st 1970 was a Thursday
     }
 };
+
 static datetime_test_suite x;
