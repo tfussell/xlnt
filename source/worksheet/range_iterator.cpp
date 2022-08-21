@@ -91,7 +91,7 @@ range_iterator &range_iterator::operator--()
 
         if (skip_null_)
         {
-            while ((**this).empty() && cursor_.row() > bounds_.top_left().column())
+            while ((**this).empty() && cursor_.column() > bounds_.top_left().column())
             {
                 cursor_.column_index(cursor_.column_index() - 1);
             }
