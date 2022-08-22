@@ -954,20 +954,13 @@ worksheet xlsx_consumer::read_worksheet_end(const std::string &rel_id)
         }
         else if (current_worksheet_element == qn("spreadsheetml", "mergeCells")) // CT_MergeCells 0-1
         {
-            auto count = std::stoull(parser().attribute("count"));
+            parser().attribute_map();
 
             while (in_element(qn("spreadsheetml", "mergeCells")))
             {
                 expect_start_element(qn("spreadsheetml", "mergeCell"), xml::content::simple);
                 ws.merge_cells(range_reference(parser().attribute("ref")));
                 expect_end_element(qn("spreadsheetml", "mergeCell"));
-
-                count--;
-            }
-
-            if (count != 0)
-            {
-                throw invalid_file("sizes don't match");
             }
         }
         else if (current_worksheet_element == qn("spreadsheetml", "phoneticPr")) // CT_PhoneticPr 0-1
