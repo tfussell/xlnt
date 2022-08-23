@@ -9,6 +9,14 @@
 xlnt can be [found](https://aur.archlinux.org/packages/xlnt/) on the AUR.
 
 ## vcpkg
+`vcpkg` installs x86 by default
+```
+.\vcpkg install xlnt
+```
+if you need x64 use the following command
+```
+.\vcpkg install xlnt:x64-windows
+```
 
 ## Compiling xlnt 1.x.x from Source on Ubuntu 16.04 LTS (Xenial Xerus) 
 Time required: Approximately 5 minutes (depending on your internet speed)
@@ -28,12 +36,9 @@ export CC=/usr/bin/gcc-6
 export CXX=/usr/bin/g++-6
 ```
 The following steps will intall xlnt
-Download the zip file from the xlnt repository
-https://github.com/tfussell/xlnt/archive/master.zip
 ```
-cd ~
-unzip Downloads/xlnt-master.zip
-cd xlnt-master
+git clone https://github.com/tfussell/xlnt.git xlnt --recurse-submodules
+cd xlnt
 cmake .
 make -j 2
 sudo make install
