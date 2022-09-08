@@ -74,28 +74,26 @@ public:
     /// Default contructor. is_set() will be false initially.
     /// </summary>
     optional() noexcept
-        : has_value_(false)
+        : optional_ptr()
     {
     }
 
     /// <summary>
-    /// Constructs this optional with a value.
+    /// Copy constructs this optional with a value.
     /// noexcept if T copy ctor is noexcept
     /// </summary>
     optional(const T &value) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(ctor_copy_T_noexcept{}))
-        : has_value_(true)
+        : optional_ptr(new T(value))
     {
-        new (&storage_) T(value);
     }
 
     /// <summary>
-    /// Constructs this optional with a value.
+    /// Move constructs this optional with a value.
     /// noexcept if T move ctor is noexcept
     /// </summary>
     optional(T &&value) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(ctor_move_T_noexcept{}))
-        : has_value_(true)
+        : optional_ptr(new T(std::move(value)))
     {
-        new (&storage_) T(std::move(value));
     }
 
     /// <summary>
@@ -103,12 +101,13 @@ public:
     /// noexcept if T copy ctor is noexcept
     /// </summary>
     optional(const optional &other) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(copy_ctor_noexcept{}))
-        : has_value_(other.has_value_)
     {
-        if (has_value_)
+        if (other.optional_ptr != nullptr)
         {
-            new (&storage_) T(other.value_ref());
-        }
+			optional_ptr = std::make_unique<T>(*other.optional_ptr);
+        } else {
+			optional_ptr = nullptr;
+		}
     }
 
     /// <summary>
@@ -116,13 +115,8 @@ public:
     /// noexcept if T move ctor is noexcept
     /// </summary>
     optional(optional &&other) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(move_ctor_noexcept{}))
-        : has_value_(other.has_value_)
+        : optional_ptr(std::move(other.optional_ptr))
     {
-        if (has_value_)
-        {
-            new (&storage_) T(std::move(other.value_ref()));
-            other.clear();
-        }
     }
 
     /// <summary>
@@ -131,14 +125,12 @@ public:
     /// </summary>
     optional &operator=(const optional &other) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(set_copy_noexcept_t{} && clear_noexcept_t{}))
     {
-        if (other.has_value_)
+        if (other.optional_ptr != nullptr)
         {
-            set(other.value_ref());
-        }
-        else
-        {
-            clear();
-        }
+            optional_ptr.reset(new T(*other.optional_ptr));
+        } else {
+			optional_ptr = nullptr;
+		}
         return *this;
     }
 
@@ -148,15 +140,7 @@ public:
     /// </summary>
     optional &operator=(optional &&other) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(set_move_noexcept_t{} && clear_noexcept_t{}))
     {
-        if (other.has_value_)
-        {
-            set(std::move(other.value_ref()));
-            other.clear();
-        }
-        else
-        {
-            clear();
-        }
+        optional_ptr = std::move(other.optional_ptr);
         return *this;
     }
 
@@ -165,7 +149,7 @@ public:
     /// </summary>
     ~optional() noexcept // note:: unconditional because msvc freaks out otherwise
     {
-        clear();
+        optional_ptr.reset();
     }
 
     /// <summary>
@@ -174,7 +158,7 @@ public:
     /// </summary>
     bool is_set() const noexcept
     {
-        return has_value_;
+        return (optional_ptr != nullptr);
     }
 
     /// <summary>
@@ -182,49 +166,19 @@ public:
     /// </summary>
     void set(const T &value) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(set_copy_noexcept_t{}))
     {
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
-        if (has_value_)
-        {
-            value_ref() = value;
-        }
-        else
-        {
-            new (&storage_) T(value);
-            has_value_ = true;
-        }
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
+        optional_ptr.reset(new T(value));
     }
 
     /// <summary>
     /// Moves the value into the stored value
     /// </summary>
+    // note seperate overload for two reasons (as opposed to perfect forwarding)
+    // 1. have to deal with implicit conversions internally with perfect forwarding
+    // 2. have to deal with the noexcept specfiers for all the different variations
+    // overload is just far and away the simpler solution
     void set(T &&value) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(set_move_noexcept_t{}))
     {
-        // note seperate overload for two reasons (as opposed to perfect forwarding)
-        // 1. have to deal with implicit conversions internally with perfect forwarding
-        // 2. have to deal with the noexcept specfiers for all the different variations
-        // overload is just far and away the simpler solution
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
-        if (has_value_)
-        {
-            value_ref() = std::move(value);
-        }
-        else
-        {
-            new (&storage_) T(std::move(value));
-            has_value_ = true;
-        }
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
+        optional_ptr.reset(new T(std::move(value)));
     }
 
     /// <summary>
@@ -232,7 +186,7 @@ public:
     /// </summary>
     optional &operator=(const T &rhs) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(set_copy_noexcept_t{}))
     {
-        set(rhs);
+        optional_ptr.reset(new T(rhs));
         return *this;
     }
 
@@ -241,7 +195,7 @@ public:
     /// </summary>
     optional &operator=(T &&rhs) noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(set_move_noexcept_t{}))
     {
-        set(std::move(rhs));
+        optional_ptr.reset(new T(std::move(rhs)));
         return *this;
     }
 
@@ -250,11 +204,7 @@ public:
     /// </summary>
     void clear() noexcept(XLNT_NOEXCEPT_VALUE_COMPAT(clear_noexcept_t{}))
     {
-        if (has_value_)
-        {
-            reinterpret_cast<T *>(&storage_)->~T();
-        }
-        has_value_ = false;
+        optional_ptr.reset();
     }
 
     /// <summary>
@@ -263,12 +213,11 @@ public:
     /// </summary>
     T &get()
     {
-        if (!has_value_)
+		if (optional_ptr == nullptr)
         {
             throw invalid_attribute();
         }
-
-        return value_ref();
+		return *optional_ptr;
     }
 
     /// <summary>
@@ -277,12 +226,11 @@ public:
     /// </summary>
     const T &get() const
     {
-        if (!has_value_)
+		if (optional_ptr == nullptr)
         {
             throw invalid_attribute();
         }
-
-        return value_ref();
+		return *optional_ptr;
     }
 
     /// <summary>
@@ -292,16 +240,21 @@ public:
     /// </summary>
     bool operator==(const optional<T> &other) const noexcept
     {
-        if (has_value_ != other.has_value_)
+		if (optional_ptr == nullptr)
         {
-            return false;
-        }
-        if (!has_value_)
-        {
-            return true;
-        }
-        // equality is overloaded to provide fuzzy equality when T is a fp number
-        return compare_equal(value_ref(), other.value_ref());
+            if (other.optional_ptr == nullptr) {
+				return true;
+			} else {
+				return false;
+			};
+        } else {
+			if (other.optional_ptr == nullptr) {
+				return false;
+			} else {
+				// equality is overloaded to provide fuzzy equality when T is a fp number
+				return compare_equal(*optional_ptr, *other.optional_ptr);
+			};
+		};
     }
 
     /// <summary>
@@ -315,19 +268,7 @@ public:
     }
 
 private:
-    // helpers for getting a T out of storage
-    T &value_ref() noexcept
-    {
-        return *reinterpret_cast<T *>(&storage_);
-    }
-
-    const T &value_ref() const noexcept
-    {
-        return *reinterpret_cast<const T *>(&storage_);
-    }
-
-    bool has_value_;
-    typename std::aligned_storage<sizeof(T), alignof(T)>::type storage_;
+    std::unique_ptr<T> optional_ptr;
 };
 
 #ifdef XLNT_NOEXCEPT_VALUE_COMPAT
