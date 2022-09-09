@@ -505,7 +505,7 @@ void cell::error(const std::string &error)
         throw invalid_data_type();
     }
 
-    d_->value_text_.plain_text(error, false);
+    d_->value_text_.get().plain_text(error, false);
     d_->type_ = type::error;
 }
 
@@ -717,7 +717,7 @@ XLNT_API rich_text cell::value() const
         return workbook().shared_strings(static_cast<std::size_t>(d_->value_numeric_));
     }
 
-    return d_->value_text_;
+    return d_->value_text_.get();
 }
 
 bool cell::has_value() const
