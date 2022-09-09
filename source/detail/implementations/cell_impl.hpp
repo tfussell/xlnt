@@ -63,12 +63,12 @@ struct cell_impl
 
     optional<std::string> formula_;
     optional<hyperlink_impl> hyperlink_;
-    optional<format_impl *> format_;
-    optional<comment *> comment_;
+    format_impl *format_;
+	comment *comment_;
 
     bool is_garbage_collectible() const
     {
-        return !(type_ != cell_type::empty || is_merged_ || phonetics_visible_ || formula_.is_set() || format_.is_set() || hyperlink_.is_set());
+        return !(type_ != cell_type::empty || is_merged_ || phonetics_visible_ || formula_.is_set() || format_ != nullptr || hyperlink_.is_set());
     }
 };
 
@@ -84,8 +84,8 @@ inline bool operator==(const cell_impl &lhs, const cell_impl &rhs)
         && float_equals(lhs.value_numeric_, rhs.value_numeric_)
         && lhs.formula_ == rhs.formula_
         && lhs.hyperlink_ == rhs.hyperlink_
-        && (lhs.format_.is_set() == rhs.format_.is_set() && (!lhs.format_.is_set() || *lhs.format_.get() == *rhs.format_.get()))
-        && (lhs.comment_.is_set() == rhs.comment_.is_set() && (!lhs.comment_.is_set() || *lhs.comment_.get() == *rhs.comment_.get()));
+		&& ((lhs.format_ != nullptr) == (rhs.format_ != nullptr) && ((lhs.format_ == nullptr) || *lhs.format_ == *rhs.format_))
+        && ((lhs.comment_ != nullptr) == (rhs.comment_ != nullptr) && ((lhs.comment_ == nullptr) || *lhs.comment_ == *rhs.comment_));
 }
 
 } // namespace detail
