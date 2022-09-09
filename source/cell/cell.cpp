@@ -504,8 +504,8 @@ void cell::error(const std::string &error)
     {
         throw invalid_data_type();
     }
-
-    d_->value_text_.get().plain_text(error, false);
+	d_->value_text_ = error;
+	d_->value_text_.get().plain_text(error, false); 
     d_->type_ = type::error;
 }
 
