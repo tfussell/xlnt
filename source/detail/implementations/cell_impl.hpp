@@ -58,13 +58,13 @@ struct cell_impl
     bool is_merged_;
     bool phonetics_visible_;
 
-    rich_text value_text_;
+    optional<rich_text> value_text_;
     double value_numeric_;
 
     optional<std::string> formula_;
     optional<hyperlink_impl> hyperlink_;
     format_impl *format_;
-	comment *comment_;
+    comment *comment_;
 
     bool is_garbage_collectible() const
     {
