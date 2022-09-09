@@ -505,7 +505,7 @@ void cell::error(const std::string &error)
         throw invalid_data_type();
     }
 
-    d_->value_text_.plain_text(error, false);
+    d_->value_text_.get().plain_text(error, false);
     d_->type_ = type::error;
 }
 
@@ -717,7 +717,7 @@ XLNT_API rich_text cell::value() const
         return workbook().shared_strings(static_cast<std::size_t>(d_->value_numeric_));
     }
 
-    return d_->value_text_;
+    return d_->value_text_.get();
 }
 
 bool cell::has_value() const
@@ -750,7 +750,7 @@ std::string cell::to_string() const
 
 bool cell::has_format() const
 {
-    return d_->format_.is_set();
+    return (d_->format_ != nullptr);
 }
 
 void cell::format(const class format new_format)
@@ -838,10 +838,10 @@ void cell::value(const std::string &value_string, bool infer_type)
 
 void cell::clear_format()
 {
-    if (d_->format_.is_set())
+    if (d_->format_ != nullptr)
     {
         format().d_->references -= format().d_->references > 0 ? 1 : 0;
-        d_->format_.clear();
+        d_->format_ = nullptr;
     }
 }
 
@@ -899,22 +899,22 @@ bool cell::has_style() const
 
 format cell::modifiable_format()
 {
-    if (!d_->format_.is_set())
+    if (d_->format_ == nullptr)
     {
         throw invalid_attribute();
     }
 
-    return xlnt::format(d_->format_.get());
+    return xlnt::format(d_->format_);
 }
 
 const format cell::format() const
 {
-    if (!d_->format_.is_set())
+    if (d_->format_ == nullptr)
     {
         throw invalid_attribute();
     }
 
-    return xlnt::format(d_->format_.get());
+    return xlnt::format(d_->format_);
 }
 
 alignment cell::alignment() const
@@ -956,7 +956,7 @@ bool cell::has_hyperlink() const
 
 bool cell::has_comment()
 {
-    return d_->comment_.is_set();
+    return (d_->comment_ != nullptr);
 }
 
 void cell::clear_comment()
@@ -964,7 +964,7 @@ void cell::clear_comment()
     if (has_comment())
     {
         d_->parent_->comments_.erase(reference().to_string());
-        d_->comment_.clear();
+        d_->comment_ = nullptr;
     }
 }
 
@@ -975,7 +975,7 @@ class comment cell::comment()
         throw xlnt::exception("cell has no comment");
     }
 
-    return *d_->comment_.get();
+    return *d_->comment_;
 }
 
 void cell::comment(const std::string &text, const std::string &author)
@@ -992,12 +992,12 @@ void cell::comment(const class comment &new_comment)
 {
     if (has_comment())
     {
-        *d_->comment_.get() = new_comment;
+        *d_->comment_ = new_comment;
     }
     else
     {
         d_->parent_->comments_[reference().to_string()] = new_comment;
-        d_->comment_.set(&d_->parent_->comments_[reference().to_string()]);
+        d_->comment_ = (&d_->parent_->comments_[reference().to_string()]);
     }
 
     // offset comment 5 pixels down and 5 pixels right of the top right corner of the cell
@@ -1005,7 +1005,7 @@ void cell::comment(const class comment &new_comment)
     cell_position.first += static_cast<int>(width()) + 5;
     cell_position.second += 5;
 
-    d_->comment_.get()->position(cell_position.first, cell_position.second);
+    d_->comment_->position(cell_position.first, cell_position.second);
 
     worksheet().register_comments_in_manifest();
 }

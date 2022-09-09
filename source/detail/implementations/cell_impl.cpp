@@ -36,7 +36,9 @@ cell_impl::cell_impl()
       row_(1),
       is_merged_(false),
       phonetics_visible_(false),
-      value_numeric_(0)
+      value_numeric_(0),
+      format_(),
+	  comment_()
 {
 }
 
