@@ -91,6 +91,12 @@ std::vector<std::string> copy_and_extract(xml::parser &p, xml::serializer &s)
 namespace xlnt {
 namespace drawing {
 
+spreadsheet_drawing::spreadsheet_drawing()
+{
+    embed_ids_ = std::vector<std::string>();
+    serialized_value_ = std::string();
+}
+    
 spreadsheet_drawing::spreadsheet_drawing(xml::parser &parser)
 {
     std::ostringstream serialization_stream;
