@@ -449,7 +449,7 @@ void xlsx_consumer::read_worksheet(const std::string &rel_id)
     }
 }
 
-void read_defined_names(worksheet ws, std::vector<defined_name> defined_names)
+static void read_defined_names(worksheet ws, std::vector<defined_name> defined_names)
 {
     for (auto &name : defined_names)
     {
