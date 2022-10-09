@@ -268,7 +268,7 @@ public:
     }
 
 private:
-    std::unique_ptr<T> optional_ptr;
+    std::unique_ptr<T,std::default_delete<T>> optional_ptr;
 };
 
 #ifdef XLNT_NOEXCEPT_VALUE_COMPAT
