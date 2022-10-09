@@ -743,6 +743,11 @@ worksheet workbook::active_sheet()
 {
     return sheet_by_index(d_->active_sheet_index_.is_set() ? d_->active_sheet_index_.get() : 0);
 }
+void workbook::active_sheet(std::size_t index)
+{
+    d_->active_sheet_index_.set(index);
+    d_->view_.get().active_tab = index;
+}
 
 bool workbook::has_named_range(const std::string &name) const
 {
