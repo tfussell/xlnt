@@ -72,6 +72,7 @@ public:
         register_test(test_Issue492_stream_empty_row);
         register_test(test_Issue503_external_link_load);
         register_test(test_formatting);
+        register_test(test_active_sheet);
     }
 
     bool workbook_matches_file(xlnt::workbook &wb, const xlnt::path &file)
@@ -799,6 +800,13 @@ public:
         assert_run(rt.runs()[9], "text", "Helvetica Neue", xlnt::theme_color(1), 12, false, true, xlnt::font::underline_style::none);
         assert_run(rt.runs()[10], " first line ", "Calibri", xlnt::theme_color(1), 12, true, false, xlnt::font::underline_style::none);
         assert_run(rt.runs()[11], "Bold And Underline", "Calibri (Body)", xlnt::theme_color(1), 12, true, false, xlnt::font::underline_style::single);
+    }
+
+    void test_active_sheet()
+    {
+        xlnt::workbook wb;
+        wb.load(path_helper::test_file("20_active_sheet.xlsx"));
+        xlnt_assert_equals(wb.active_sheet(), wb[2]);
     }
 };
 
