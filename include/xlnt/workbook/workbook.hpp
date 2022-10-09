@@ -204,6 +204,12 @@ public:
     worksheet active_sheet();
 
     /// <summary>
+    /// Sets the worksheet that is determined to be active. An active
+    /// sheet is that which is initially shown by the spreadsheet editor.
+    /// </summary>
+    void active_sheet(std::size_t index);
+
+    /// <summary>
     /// Returns the worksheet with the given name. This may throw an exception
     /// if the sheet isn't found. Use workbook::contains(const std::string &)
     /// to make sure the sheet exists before calling this method.
