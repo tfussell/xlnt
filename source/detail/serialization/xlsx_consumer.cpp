@@ -2037,6 +2037,7 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
                 if (parser().attribute_present("activeTab"))
                 {
                     view.active_tab = parser().attribute<std::size_t>("activeTab");
+                    target_.d_->active_sheet_index_.set(view.active_tab.get());
                 }
 
                 target_.view(view);
