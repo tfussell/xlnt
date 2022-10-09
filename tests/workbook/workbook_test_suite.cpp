@@ -77,6 +77,11 @@ public:
     {
         xlnt::workbook wb;
         xlnt_assert_equals(wb.active_sheet(), wb[0]);
+        
+        wb.create_sheet();
+        wb.create_sheet();
+        wb.active_sheet(2);
+        xlnt_assert_equals(wb.active_sheet(), wb[2]);
     }
 
     void test_create_sheet()
