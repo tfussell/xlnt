@@ -27,6 +27,7 @@
 #include "xlnt/utils/numeric.hpp"
 #include "xlnt/xlnt_config.hpp"
 #include <type_traits>
+#include <memory>
 
 namespace xlnt {
 
