@@ -57,7 +57,7 @@ public:
     void test_float_equals_zero()
     {
         // comparing relatively small numbers (2.3e-6) with 0 will be true by default
-        const float comp_val = 2.3e-6; // about the largest difference allowed by default
+        const float comp_val = 2.3e-6f; // about the largest difference allowed by default
         xlnt_assert(0.f != comp_val); // fail because not exactly equal
         xlnt_assert(xlnt::detail::float_equals(0.0, comp_val));
         xlnt_assert(xlnt::detail::float_equals(0.0, -comp_val));
@@ -69,7 +69,7 @@ public:
         // #1: reduce the epsilon_scale (default is 20)
         // This can bring the range down to FLT_EPSILON (scale factor of 1)
         xlnt_assert(!xlnt::detail::float_equals(0.0, comp_val, 10));
-        const float closer_comp_val = 1.1e-6;
+        const float closer_comp_val = 1.1e-6f;
         xlnt_assert(xlnt::detail::float_equals(0.0, closer_comp_val, 10));
         xlnt_assert(!xlnt::detail::float_equals(0.0, closer_comp_val + 0.1e-6, 10));
         xlnt_assert(xlnt::detail::float_equals(0.0, -closer_comp_val, 10));
@@ -79,7 +79,7 @@ public:
         // This makes the epsilon range quite significantly less
         xlnt_assert(!xlnt::detail::float_equals<double>(0.0, comp_val));
         xlnt_assert(!xlnt::detail::float_equals<double>(0.0, closer_comp_val));
-        const float tiny_comp_val = 4.4e-15;
+        const float tiny_comp_val = 4.4e-15f;
         xlnt_assert(xlnt::detail::float_equals<double>(0.0, tiny_comp_val));
         xlnt_assert(!xlnt::detail::float_equals<double>(0.0, tiny_comp_val + 0.1e-15));
         xlnt_assert(xlnt::detail::float_equals<double>(0.0, -tiny_comp_val));
@@ -90,7 +90,7 @@ public:
         xlnt_assert(!xlnt::detail::float_equals<double>(0.0, comp_val, 1));
         xlnt_assert(!xlnt::detail::float_equals<double>(0.0, closer_comp_val, 1));
         xlnt_assert(!xlnt::detail::float_equals<double>(0.0, tiny_comp_val, 1));
-        const float really_tiny_comp_val = 2.2e-16; // the limit is +/- std::numeric_limits<double>::epsilon()
+        const float really_tiny_comp_val = 2.2e-16f; // the limit is +/- std::numeric_limits<double>::epsilon()
         xlnt_assert(xlnt::detail::float_equals<double>(0.0, really_tiny_comp_val, 1));
         xlnt_assert(!xlnt::detail::float_equals<double>(0.0, really_tiny_comp_val + 0.1e-16, 1));
         xlnt_assert(xlnt::detail::float_equals<double>(0.0, -really_tiny_comp_val, 1));
@@ -132,7 +132,7 @@ public:
 
     void test_float_equals_nan()
     {
-        const float nan = std::nan("");
+        const float nan = std::nanf("");
         // nans always compare false
         xlnt_assert(!xlnt::detail::float_equals(nan, 0.f));
         xlnt_assert(!xlnt::detail::float_equals(nan, nan));
