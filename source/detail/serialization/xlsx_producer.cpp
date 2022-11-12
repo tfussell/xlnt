@@ -433,64 +433,7 @@ void xlsx_producer::write_custom_properties(const relationship & /*rel*/)
 void xlsx_producer::write_workbook(const relationship &rel)
 {
     std::size_t num_visible = 0;
-    std::vector<defined_name> defined_names;
 
-    for (auto ws : source_)
-    {
-        if (!ws.has_page_setup() || ws.page_setup().sheet_state() == sheet_state::visible)
-        {
-            num_visible++;
-        }
-        
-        auto title_ref = "'" + ws.title() + "'!";
-        
-        if (ws.has_auto_filter())
-        {
-            defined_name name;
-            name.sheet_id = ws.id();
-            name.name = "_xlnm._FilterDatabase";
-            name.hidden = true;
-            name.value = title_ref + range_reference::make_absolute(ws.auto_filter()).to_string();
-            defined_names.push_back(name);
-        }
-        
-        if (ws.has_print_area())
-        {
-            defined_name name;
-            name.sheet_id = ws.id();
-            name.name = "_xlnm.Print_Area";
-            name.hidden = false;
-            name.value = title_ref + range_reference::make_absolute(ws.print_area()).to_string();
-            defined_names.push_back(name);
-        }
-        
-        if (ws.has_print_titles())
-        {
-            defined_name name;
-            name.sheet_id = ws.id();
-            name.name = "_xlnm.Print_Titles";
-            name.hidden = false;
-            
-            auto cols = ws.print_title_cols();
-            if (cols.is_set())
-            {
-                name.value = title_ref + "$" + cols.get().first.column_string()
-                    + ":" + "$" + cols.get().second.column_string();
-            }
-            auto rows = ws.print_title_rows();
-            if (rows.is_set())
-            {
-                if (!name.value.empty())
-                {
-                    name.value.push_back(',');
-                }
-                name.value += title_ref + "$" + std::to_string(rows.get().first)
-                    + ":" + "$" + std::to_string(rows.get().second);
-            }
-
-            defined_names.push_back(name);
-        }
-    }
 
     if (num_visible == 0)
     {
@@ -657,10 +600,10 @@ void xlsx_producer::write_workbook(const relationship &rel)
 
     write_end_element(xmlns, "sheets");
 
-    if (!defined_names.empty())
+    if (!source_.d_->defined_names_.empty())
     {
         write_start_element(xmlns, "definedNames");
-        for (auto name : defined_names)
+        for (auto name : source_.d_->defined_names_)
         {
             write_start_element(xmlns, "definedName");
             write_attribute("name", name.name);
@@ -693,7 +636,7 @@ void xlsx_producer::write_workbook(const relationship &rel)
             if (name.sheet_id.is_set())
             {
                 const auto sheet_id = name.sheet_id.get();
-                write_attribute("localSheetId", std::to_string(sheet_id - 1)); // Don't think this is meant to require subtracting 1?
+                write_attribute("localSheetId", std::to_string(sheet_id)); // Don't think this is meant to require subtracting 1?
             }
 
             if (name.hidden.is_set())

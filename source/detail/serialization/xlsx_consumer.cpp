@@ -2135,8 +2135,8 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
 
                 parser().attribute_map(); // skip remaining attributes
                 name.value = read_text();
-                defined_names_.push_back(name);
-                
+                target_.d_->defined_names_.push_back(name);
+
                 expect_end_element(qn("spreadsheetml", "definedName"));
             }
         }
