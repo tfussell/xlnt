@@ -30,9 +30,18 @@ namespace detail {
 
 struct defined_name
 {
+    // Implements (most of) CT_RevisionDefinedName, there's several "old" members in the spec but they're also ignored in other librarie
     std::string name;
-    std::size_t sheet_id;
-    bool hidden;
+    xlnt::optional<std::string> comment;
+    xlnt::optional<std::string> custom_menu;
+    xlnt::optional<std::string> description;
+    xlnt::optional<std::string> help;
+    xlnt::optional<std::string> status_bar;
+    xlnt::optional<std::size_t> sheet_id; // 0 indexed.
+    xlnt::optional<bool> hidden;
+    xlnt::optional<bool> function;
+    xlnt::optional<std::size_t> function_group_id;
+    xlnt::optional<std::string> shortcut_key; // This is unsigned byte in the spec, but openpyxl uses string so let's try that
     std::string value;
 };
 

@@ -2082,12 +2082,57 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
 
                 defined_name name;
                 name.name = parser().attribute("name");
-                name.sheet_id = parser().attribute<std::size_t>("localSheetId");
-                name.hidden = false;
+
+                if (parser().attribute_present("comment"))
+                {
+                    name.comment = parser().attribute<std::string>("comment");
+                }
+
+                if (parser().attribute_present("customMenu"))
+                {
+                    name.custom_menu = parser().attribute<std::string>("customMenu");
+                }
+
+                if (parser().attribute_present("description"))
+                {
+                    name.description = parser().attribute<std::string>("description");
+                }
+
+                if (parser().attribute_present("help"))
+                {
+                    name.help = parser().attribute<std::string>("help");
+                }
+
+                if (parser().attribute_present("statusBar"))
+                {
+                    name.status_bar = parser().attribute<std::string>("statusBar");
+                }
+
+                if (parser().attribute_present("localSheetId"))
+                {
+                    name.sheet_id = parser().attribute<std::size_t>("localSheetId");
+                }
+                
                 if (parser().attribute_present("hidden"))
                 {
                     name.hidden = is_true(parser().attribute("hidden"));
                 }
+
+                if (parser().attribute_present("function"))
+                {
+                    name.function = is_true(parser().attribute("function"));
+                }
+
+                if (parser().attribute_present("functionGroupId"))
+                {
+                    name.function_group_id = parser().attribute<std::size_t>("functionGroupId");
+                }
+
+                if (parser().attribute_present("shortcutKey"))
+                {
+                    name.shortcut_key = parser().attribute<std::string>("shortcutKey");
+                }
+
                 parser().attribute_map(); // skip remaining attributes
                 name.value = read_text();
                 defined_names_.push_back(name);

@@ -664,11 +664,67 @@ void xlsx_producer::write_workbook(const relationship &rel)
         {
             write_start_element(xmlns, "definedName");
             write_attribute("name", name.name);
-            if (name.hidden)
+
+            if (name.comment.is_set())
             {
-                write_attribute("hidden", write_bool(true));
+                write_attribute("comment", name.comment.get());
             }
-            write_attribute("localSheetId", std::to_string(name.sheet_id - 1)); // 0-indexed for some reason
+
+            if (name.custom_menu.is_set())
+            {
+                write_attribute("customMenu", name.custom_menu.get());
+            }
+
+            if (name.description.is_set())
+            {
+                write_attribute("description", name.description.get());
+            }
+
+            if (name.help.is_set())
+            {
+                write_attribute("help", name.help.get());
+            }
+
+            if (name.status_bar.is_set())
+            {
+                write_attribute("statusBar", name.status_bar.get());
+            }
+
+            if (name.sheet_id.is_set())
+            {
+                const auto sheet_id = name.sheet_id.get();
+                write_attribute("localSheetId", std::to_string(sheet_id - 1)); // Don't think this is meant to require subtracting 1?
+            }
+
+            if (name.hidden.is_set())
+            {
+                const auto hidden_state = name.hidden.get();
+                if (hidden_state)
+                {
+                    write_attribute("hidden", write_bool(true));
+                }
+            }
+
+            if (name.function.is_set())
+            {
+                const auto function_state = name.function.get();
+                if (function_state)
+                {
+                    write_attribute("function", write_bool(true));
+                }
+            }
+
+            if (name.function_group_id.is_set())
+            {
+                const auto function_group_id = name.function_group_id.get();
+                write_attribute("functionGroupId", std::to_string(function_group_id));
+            }
+
+            if (name.shortcut_key.is_set())
+            {
+                write_attribute("shortcutKey", name.shortcut_key.get());
+            }
+
             write_characters(name.value);
             write_end_element(xmlns, "definedName");
         }
