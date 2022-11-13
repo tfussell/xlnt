@@ -1735,6 +1735,7 @@ detail::defined_name &workbook::get_defined_name(const std::string &name)
     for (auto &defined_name : d_->defined_names_)
         if (defined_name.name == name)
             return defined_name;
+    throw key_not_found();
 }
 
 void workbook::remove_defined_name(const std::size_t index)
@@ -1758,5 +1759,5 @@ void workbook::remove_defined_name(const std::string &name)
     }
     if (d_->defined_names_.size() > 0)
         remove_defined_name(offending_index);
-
+}
 } // namespace xlnt

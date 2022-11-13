@@ -82,7 +82,7 @@ struct stylesheet;
 struct workbook_impl;
 class xlsx_consumer;
 class xlsx_producer;
-class defined_name;
+struct defined_name;
 
 } // namespace detail
 
