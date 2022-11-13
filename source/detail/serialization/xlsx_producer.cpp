@@ -499,15 +499,16 @@ void xlsx_producer::write_workbook(const relationship &rel)
             added_print_titles = true;
         }
         // Add any sheet defined names to the vector
-        for (const auto &sheet_defined_name : ws.d_->defined_names_)
+        for (auto &sheet_defined_name : ws.d_->defined_names_)
         {
+            sheet_defined_name.sheet_id = ws.id();
             if (sheet_defined_name.name == "_xlnm._FilterDatabase" && !added_auto_filter)
                 defined_names.push_back(sheet_defined_name);
-            else if (sheet_defined_name.name == "_xlnm.Print_Area" && !added_auto_filter)
+            else if (sheet_defined_name.name == "_xlnm.Print_Area" && !added_print_area)
                 defined_names.push_back(sheet_defined_name);
-            else if (sheet_defined_name.name == "_xlnm.Print_Titles" && !added_auto_filter)
+            else if (sheet_defined_name.name == "_xlnm.Print_Titles" && !added_print_titles)
                 defined_names.push_back(sheet_defined_name);
-            else
+            else if (!added_auto_filter && !added_print_area && !added_print_titles)
                 defined_names.push_back(sheet_defined_name);
         }
     }
