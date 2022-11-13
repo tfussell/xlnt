@@ -41,6 +41,7 @@
 #include <xlnt/worksheet/print_options.hpp>
 #include <xlnt/worksheet/sheet_pr.hpp>
 #include <detail/implementations/cell_impl.hpp>
+#include <detail/serialization/defined_name.hpp>
 
 namespace xlnt {
 
@@ -88,6 +89,8 @@ struct worksheet_impl
         extension_list_ = other.extension_list_;
         sheet_properties_ = other.sheet_properties_;
         print_options_ = other.print_options_;
+        defined_names_ = other.defined_names_;
+
 
         for (auto &cell : cell_map_)
         {
@@ -97,8 +100,15 @@ struct worksheet_impl
 
     workbook *parent_;
 
-    bool operator==(const worksheet_impl& rhs) const
+    bool operator==(const worksheet_impl &rhs) const
     {
+        if (defined_names_.size() != rhs.defined_names_.size()) return false;
+        
+        for (std::size_t i = 0; i < defined_names_.size(); i++)
+        {
+            if (defined_names_[i] != rhs.defined_names_[i]) return false;
+        }
+
         return id_ == rhs.id_
             && title_ == rhs.title_
             && format_properties_ == rhs.format_properties_
@@ -122,6 +132,7 @@ struct worksheet_impl
             && print_options_ == rhs.print_options_
             && sheet_properties_ == rhs.sheet_properties_
             && extension_list_ == rhs.extension_list_;
+      
     }
 
     std::size_t id_;
@@ -160,6 +171,8 @@ struct worksheet_impl
 
     std::string drawing_rel_id_;
     optional<drawing::spreadsheet_drawing> drawing_;
+
+    std::vector<defined_name> defined_names_;
 };
 
 } // namespace detail

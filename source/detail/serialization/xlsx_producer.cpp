@@ -433,7 +433,84 @@ void xlsx_producer::write_custom_properties(const relationship & /*rel*/)
 void xlsx_producer::write_workbook(const relationship &rel)
 {
     std::size_t num_visible = 0;
+    std::vector<defined_name> defined_names;
 
+    defined_names = source_.d_->defined_names_;
+
+    for (auto ws : source_)
+    {
+        if (!ws.has_page_setup() || ws.page_setup().sheet_state() == sheet_state::visible)
+        {
+            num_visible++;
+        }
+        
+        auto title_ref = "'" + ws.title() + "'!";
+        
+        bool added_auto_filter = false;
+        bool added_print_area = false;
+        bool added_print_titles = false;
+        if (ws.has_auto_filter())
+        {
+            defined_name name;
+            name.sheet_id = ws.id();
+            name.name = "_xlnm._FilterDatabase";
+            name.hidden = true;
+            name.value = title_ref + range_reference::make_absolute(ws.auto_filter()).to_string();
+            defined_names.push_back(name);
+            added_auto_filter = true;
+        }
+        
+        if (ws.has_print_area())
+        {
+            defined_name name;
+            name.sheet_id = ws.id();
+            name.name = "_xlnm.Print_Area";
+            name.hidden = false;
+            name.value = title_ref + range_reference::make_absolute(ws.print_area()).to_string();
+            defined_names.push_back(name);
+            added_print_area = true;
+        }
+        
+        if (ws.has_print_titles())
+        {
+            defined_name name;
+            name.sheet_id = ws.id();
+            name.name = "_xlnm.Print_Titles";
+            name.hidden = false;
+            
+            auto cols = ws.print_title_cols();
+            if (cols.is_set())
+            {
+                name.value = title_ref + "$" + cols.get().first.column_string()
+                    + ":" + "$" + cols.get().second.column_string();
+            }
+            auto rows = ws.print_title_rows();
+            if (rows.is_set())
+            {
+                if (!name.value.empty())
+                {
+                    name.value.push_back(',');
+                }
+                name.value += title_ref + "$" + std::to_string(rows.get().first)
+                    + ":" + "$" + std::to_string(rows.get().second);
+            }
+
+            defined_names.push_back(name);
+            added_print_titles = true;
+        }
+        // Add any sheet defined names to the vector
+        for (const auto &sheet_defined_name : ws.d_->defined_names_)
+        {
+            if (sheet_defined_name.name == "_xlnm._FilterDatabase" && !added_auto_filter)
+                defined_names.push_back(sheet_defined_name);
+            else if (sheet_defined_name.name == "_xlnm.Print_Area" && !added_auto_filter)
+                defined_names.push_back(sheet_defined_name);
+            else if (sheet_defined_name.name == "_xlnm.Print_Titles" && !added_auto_filter)
+                defined_names.push_back(sheet_defined_name);
+            else
+                defined_names.push_back(sheet_defined_name);
+        }
+    }
 
     if (num_visible == 0)
     {
@@ -600,10 +677,10 @@ void xlsx_producer::write_workbook(const relationship &rel)
 
     write_end_element(xmlns, "sheets");
 
-    if (!source_.d_->defined_names_.empty())
+    if (!defined_names.empty())
     {
         write_start_element(xmlns, "definedNames");
-        for (auto name : source_.d_->defined_names_)
+        for (auto name : defined_names)
         {
             write_start_element(xmlns, "definedName");
             write_attribute("name", name.name);
@@ -636,7 +713,7 @@ void xlsx_producer::write_workbook(const relationship &rel)
             if (name.sheet_id.is_set())
             {
                 const auto sheet_id = name.sheet_id.get();
-                write_attribute("localSheetId", std::to_string(sheet_id)); // Don't think this is meant to require subtracting 1?
+                write_attribute("localSheetId", std::to_string(sheet_id - 1)); // Don't think this is meant to require subtracting 1?
             }
 
             if (name.hidden.is_set())

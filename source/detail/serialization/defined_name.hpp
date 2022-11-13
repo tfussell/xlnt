@@ -51,7 +51,7 @@ struct defined_name
         return *this;
     }
 
-    bool operator==(const defined_name &other)
+    bool operator==(const defined_name &other) const
     {
         return name == other.name
             && comment == other.comment
@@ -66,7 +66,8 @@ struct defined_name
             && shortcut_key == other.shortcut_key
             && value == other.value;
     }
-    bool operator!=(const defined_name &other)
+
+    bool operator!=(const defined_name &other) const
     {
         return !(*this == other);
     }

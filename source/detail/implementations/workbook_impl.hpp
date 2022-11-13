@@ -94,7 +94,7 @@ struct workbook_impl
         return *this;
     }
 
-    bool operator==(const workbook_impl &other)
+    bool operator==(const workbook_impl &other) const
     {
         if (defined_names_.size() != other.defined_names_.size()) return false;
 
