@@ -453,7 +453,7 @@ void xlsx_producer::write_workbook(const relationship &rel)
         if (ws.has_auto_filter())
         {
             defined_name name;
-            name.sheet_id = ws.id();
+            name.sheet_id = sheet_id;
             name.name = "_xlnm._FilterDatabase";
             name.hidden = true;
             name.value = title_ref + range_reference::make_absolute(ws.auto_filter()).to_string();
@@ -464,7 +464,7 @@ void xlsx_producer::write_workbook(const relationship &rel)
         if (ws.has_print_area())
         {
             defined_name name;
-            name.sheet_id = ws.id();
+            name.sheet_id = sheet_id;
             name.name = "_xlnm.Print_Area";
             name.hidden = false;
             name.value = title_ref + range_reference::make_absolute(ws.print_area()).to_string();
@@ -475,7 +475,7 @@ void xlsx_producer::write_workbook(const relationship &rel)
         if (ws.has_print_titles())
         {
             defined_name name;
-            name.sheet_id = ws.id();
+            name.sheet_id = sheet_id;
             name.name = "_xlnm.Print_Titles";
             name.hidden = false;
             
