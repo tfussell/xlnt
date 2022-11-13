@@ -2276,8 +2276,9 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
             }
             else
             {
-                // Name is global and belongs to the workbook
-                workbook_names.push_back(name);
+                // Name is global and belongs to the workbook, if i'ts not already added
+                if (std::find(workbook_names.begin(), workbook_names.end(), name) == workbook_names.end())
+                    workbook_names.push_back(name);
             }
         }
 

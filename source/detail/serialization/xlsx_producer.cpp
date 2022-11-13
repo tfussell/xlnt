@@ -436,6 +436,7 @@ void xlsx_producer::write_workbook(const relationship &rel)
     std::vector<defined_name> defined_names;
 
     defined_names = source_.d_->defined_names_;
+    std::size_t sheet_id = 1;
 
     for (auto ws : source_)
     {
@@ -501,7 +502,7 @@ void xlsx_producer::write_workbook(const relationship &rel)
         // Add any sheet defined names to the vector
         for (auto &sheet_defined_name : ws.d_->defined_names_)
         {
-            sheet_defined_name.sheet_id = ws.id();
+            sheet_defined_name.sheet_id = sheet_id;
             if (sheet_defined_name.name == "_xlnm._FilterDatabase" && !added_auto_filter)
                 defined_names.push_back(sheet_defined_name);
             else if (sheet_defined_name.name == "_xlnm.Print_Area" && !added_print_area)
@@ -511,6 +512,7 @@ void xlsx_producer::write_workbook(const relationship &rel)
             else if (!added_auto_filter && !added_print_area && !added_print_titles)
                 defined_names.push_back(sheet_defined_name);
         }
+        sheet_id++;
     }
 
     if (num_visible == 0)
