@@ -715,8 +715,7 @@ void xlsx_producer::write_workbook(const relationship &rel)
 
             if (name.sheet_id.is_set())
             {
-                const auto sheet_id = name.sheet_id.get();
-                write_attribute("localSheetId", std::to_string(sheet_id - 1)); // Don't think this is meant to require subtracting 1?
+                write_attribute("localSheetId", std::to_string(name.sheet_id.get() - 1)); // Don't think this is meant to require subtracting 1?
             }
 
             if (name.hidden.is_set())
