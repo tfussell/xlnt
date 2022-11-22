@@ -2399,25 +2399,31 @@ void xlsx_producer::write_worksheet(const relationship &rel)
             {
                 write_attribute("topLeftCell", current_pane.top_left_cell.get().to_string());
             }
-
-            if (current_pane.x_split + 1 == current_pane.top_left_cell.get().column())
+            
+            if (current_pane.x_split.is_set())
             {
-                write_attribute("xSplit", current_pane.x_split.index);
+                write_attribute("xSplit", current_pane.x_split.get());
             }
 
-            if (current_pane.y_split + 1 == current_pane.top_left_cell.get().row())
+            if (current_pane.x_split.is_set())
             {
-                write_attribute("ySplit", current_pane.y_split);
+                write_attribute("ySplit", current_pane.y_split.get());
             }
 
-            if (current_pane.active_pane != pane_corner::top_left)
+            if (current_pane.active_pane.is_set())
             {
-                write_attribute("activePane", current_pane.active_pane);
+                if (current_pane.active_pane.get() != pane_corner::top_left)
+                {
+                    write_attribute("activePane", current_pane.active_pane.get());
+                }
             }
 
-            if (current_pane.state != pane_state::split)
+            if (current_pane.state.is_set())
             {
-                write_attribute("state", current_pane.state);
+                if (current_pane.state.get() != pane_state::split)
+                {
+                    write_attribute("state", current_pane.state.get());
+                }
             }
 
             write_end_element(xmlns, "pane");
