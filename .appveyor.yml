@@ -24,7 +24,7 @@ before_build:
   - git submodule update --init --recursive
   - mkdir build
   - cd build
-  - cmake -G "Visual Studio 14 2015" -D CMAKE_GENERATOR_PLATFORM=%platform% -D STATIC=%STATIC% -D SAMPLES=ON -D BENCHMARKS=ON ..
+  - cmake -G "Visual Studio 14 2015" -D CMAKE_GENERATOR_PLATFORM=%platform% -D STATIC=%STATIC% -D SAMPLES=ON -D BENCHMARKS=ON -D TESTS=ON ..
 
 build:
   project: build/xlnt_all.sln
