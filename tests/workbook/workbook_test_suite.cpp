@@ -36,6 +36,7 @@
 #include <xlnt/workbook/worksheet_iterator.hpp>
 #include <xlnt/worksheet/range.hpp>
 #include <xlnt/worksheet/worksheet.hpp>
+#include <detail/serialization/defined_name.hpp>
 
 class workbook_test_suite : public test_suite
 {
@@ -60,6 +61,9 @@ public:
         register_test(test_add_named_range);
         register_test(test_get_named_range);
         register_test(test_remove_named_range);
+        register_test(test_add_defined_name);
+        register_test(test_modify_defined_name);
+        register_test(test_remove_defined_name);
         register_test(test_post_increment_iterator);
         register_test(test_copy_iterator);
         register_test(test_manifest);
@@ -340,6 +344,63 @@ public:
         xlnt_assert(!new_sheet.has_named_range("test_nr"));
         xlnt_assert(!wb.has_named_range("test_nr"));
         xlnt_assert_throws(wb.remove_named_range("test_nr2"), std::runtime_error);
+    }
+
+    void test_add_defined_name()
+    {
+        xlnt::workbook wb;
+        auto new_sheet = wb.create_sheet();
+
+        xlnt::detail::defined_name name;
+        const std::string dname = "Workbook Defined Name";
+        const std::string dcomment = "This should only exist on a workbook";
+        name.name = dname;
+        name.comment = dcomment;
+        name.value = "='Sheet1'!A1";
+        wb.add_defined_name(name);
+        
+        xlnt_assert(wb.get_defined_names().size() == 1);
+    }
+
+    void test_modify_defined_name()
+    {
+        xlnt::workbook wb;
+        auto new_sheet = wb.create_sheet();
+
+        xlnt::detail::defined_name name;
+        const std::string dname = "Workbook Defined Name";
+        const std::string dcomment = "This should only exist on a workbook";
+        name.name = dname;
+        name.comment = dcomment;
+        name.value = "='Sheet1'!A1";
+        wb.add_defined_name(name);
+
+        xlnt_assert(wb.get_defined_name(0).name == dname);
+        xlnt_assert(wb.get_defined_name(dname).comment == dcomment);
+
+        wb.get_defined_name(0).hidden = true;
+        xlnt_assert(wb.get_defined_name(0).hidden == true);
+
+        xlnt_assert_throws(wb.get_defined_name("Doesn't exist"), xlnt::key_not_found);
+    }
+
+    void test_remove_defined_name()
+    {
+        xlnt::workbook wb;
+        auto new_sheet = wb.create_sheet();
+
+        xlnt::detail::defined_name name;
+        const std::string dname = "Workbook Defined Name";
+        const std::string dcomment = "This should only exist on a workbook";
+        name.name = dname;
+        name.comment = dcomment;
+        name.value = "='Sheet1'!A1";
+        wb.add_defined_name(name);
+
+        xlnt_assert(wb.get_defined_names().size() == 1);
+        wb.remove_defined_name(dname);
+
+        xlnt_assert(wb.get_defined_names().size() == 0);
     }
 
     void test_post_increment_iterator()

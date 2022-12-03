@@ -29,6 +29,7 @@
 
 #include <detail/implementations/stylesheet.hpp>
 #include <detail/implementations/worksheet_impl.hpp>
+#include <detail/serialization/defined_name.hpp>
 #include <xlnt/packaging/ext_list.hpp>
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/utils/datetime.hpp>
@@ -88,11 +89,20 @@ struct workbook_impl
         extended_properties_ = other.extended_properties_;
         custom_properties_ = other.custom_properties_;
 
+        defined_names_ = other.defined_names_;
+
         return *this;
     }
 
-    bool operator==(const workbook_impl &other)
+    bool operator==(const workbook_impl &other) const
     {
+        if (defined_names_.size() != other.defined_names_.size()) return false;
+
+        for (std::size_t i = 0; i < defined_names_.size(); i++)
+        {
+            if (defined_names_[i] != other.defined_names_[i]) return false;
+        }
+
         return active_sheet_index_ == other.active_sheet_index_
             && worksheets_ == other.worksheets_
             && shared_strings_ids_ == other.shared_strings_ids_
@@ -168,6 +178,7 @@ struct workbook_impl
     optional<std::string> abs_path_;
     optional<std::size_t> arch_id_flags_;
     optional<ext_list> extensions_;
+    std::vector<defined_name> defined_names_;
 };
 
 } // namespace detail

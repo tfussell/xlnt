@@ -60,6 +60,7 @@
 #include <detail/serialization/open_stream.hpp>
 #include <detail/serialization/vector_streambuf.hpp>
 #include <detail/serialization/xlsx_consumer.hpp>
+#include <detail/serialization/defined_name.hpp>
 #include <detail/serialization/xlsx_producer.hpp>
 
 namespace {
@@ -1713,4 +1714,50 @@ void workbook::reorder_relationships()
     }
 }
 
+void workbook::add_defined_name(detail::defined_name name)
+{
+    d_->defined_names_.push_back(name);
+}
+
+std::vector<detail::defined_name> workbook::get_defined_names() const
+{
+    return d_->defined_names_;
+}
+
+detail::defined_name &workbook::get_defined_name(const std::size_t index)
+{
+    return d_->defined_names_[index];
+}
+
+detail::defined_name &workbook::get_defined_name(const std::string &name)
+{
+    // Only return the first matching
+    for (auto &defined_name : d_->defined_names_)
+        if (defined_name.name == name)
+            return defined_name;
+    throw key_not_found();
+}
+
+void workbook::remove_defined_name(const std::size_t index)
+{
+    d_->defined_names_.erase(d_->defined_names_.begin() + index);
+}
+
+void workbook::remove_defined_name(const std::string &name)
+{
+    // Only remove first matching
+    std::size_t offending_index = 0;
+    std::size_t index = 0;
+    for (auto &defined_name : d_->defined_names_)
+    {
+        if (defined_name.name == name)
+        {
+            offending_index = index;
+            break;
+        }
+        index++;
+    }
+    if (d_->defined_names_.size() > 0)
+        remove_defined_name(offending_index);
+}
 } // namespace xlnt

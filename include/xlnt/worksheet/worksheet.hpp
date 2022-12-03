@@ -64,7 +64,7 @@ namespace detail {
 
 class xlsx_consumer;
 class xlsx_producer;
-
+struct defined_name;
 struct worksheet_impl;
 
 } // namespace detail
@@ -728,6 +728,38 @@ public:
     /// Returns the active cell on the default worksheet view.
     /// </summary>
     cell_reference active_cell() const;
+
+     // Defined Names
+
+    /// <summary>
+    /// Add a defined name to a sheet
+    /// </summary
+    void add_defined_name(detail::defined_name name);
+
+    /// <summary>
+    /// Returns a copy of workbook defined names
+    /// </summary>
+    std::vector<detail::defined_name> get_defined_names() const;
+
+    /// <summary>
+    /// Returns a reference to a single defined name
+    /// </summary>
+    detail::defined_name &get_defined_name(const std::size_t index);
+
+    /// <summary>
+    /// Returns a reference to a single defined name. Finds the first name that matches, there may be multiple with the same name
+    /// </summary>
+    detail::defined_name &get_defined_name(const std::string &name);
+
+    /// <summary>
+    /// Removes the defined name at the given index
+    /// </summary>
+    void remove_defined_name(const std::size_t index);
+
+    /// <summary>
+    /// Removes the defined name that first matches the passed name.
+    /// </summary>
+    void remove_defined_name(const std::string &name);
 
     // page breaks
 

@@ -73,6 +73,7 @@ public:
         register_test(test_Issue503_external_link_load);
         register_test(test_formatting);
         register_test(test_active_sheet);
+        register_test(test_named_range);
     }
 
     bool workbook_matches_file(xlnt::workbook &wb, const xlnt::path &file)
@@ -807,6 +808,11 @@ public:
         xlnt::workbook wb;
         wb.load(path_helper::test_file("20_active_sheet.xlsx"));
         xlnt_assert_equals(wb.active_sheet(), wb[2]);
+    }
+
+    void test_named_range()
+    {
+        xlnt_assert(round_trip_matches_rw(path_helper::test_file("19_defined_names.xlsx")));
     }
 };
 

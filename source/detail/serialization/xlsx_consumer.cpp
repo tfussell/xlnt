@@ -534,7 +534,7 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
     expect_start_element(qn("spreadsheetml", "worksheet"), xml::content::complex); // CT_Worksheet
     skip_attributes({qn("mc", "Ignorable")});
     
-    read_defined_names(ws, defined_names_);
+    read_defined_names(ws, ws.d_->defined_names_);
 
     while (in_element(qn("spreadsheetml", "worksheet")))
     {
@@ -2082,16 +2082,61 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
 
                 defined_name name;
                 name.name = parser().attribute("name");
-                name.sheet_id = parser().attribute<std::size_t>("localSheetId");
-                name.hidden = false;
+
+                if (parser().attribute_present("comment"))
+                {
+                    name.comment = parser().attribute<std::string>("comment");
+                }
+
+                if (parser().attribute_present("customMenu"))
+                {
+                    name.custom_menu = parser().attribute<std::string>("customMenu");
+                }
+
+                if (parser().attribute_present("description"))
+                {
+                    name.description = parser().attribute<std::string>("description");
+                }
+
+                if (parser().attribute_present("help"))
+                {
+                    name.help = parser().attribute<std::string>("help");
+                }
+
+                if (parser().attribute_present("statusBar"))
+                {
+                    name.status_bar = parser().attribute<std::string>("statusBar");
+                }
+
+                if (parser().attribute_present("localSheetId"))
+                {
+                    name.sheet_id = parser().attribute<std::size_t>("localSheetId");
+                }
+                
                 if (parser().attribute_present("hidden"))
                 {
                     name.hidden = is_true(parser().attribute("hidden"));
                 }
+
+                if (parser().attribute_present("function"))
+                {
+                    name.function = is_true(parser().attribute("function"));
+                }
+
+                if (parser().attribute_present("functionGroupId"))
+                {
+                    name.function_group_id = parser().attribute<std::size_t>("functionGroupId");
+                }
+
+                if (parser().attribute_present("shortcutKey"))
+                {
+                    name.shortcut_key = parser().attribute<std::string>("shortcutKey");
+                }
+
                 parser().attribute_map(); // skip remaining attributes
                 name.value = read_text();
-                defined_names_.push_back(name);
-                
+                target_.d_->defined_names_.push_back(name);
+
                 expect_end_element(qn("spreadsheetml", "definedName"));
             }
         }
@@ -2195,6 +2240,7 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
         }
     }
 
+    std::vector<defined_name> workbook_names;
     for (auto worksheet_rel : manifest().relationships(workbook_path, relationship_type::worksheet))
     {
         auto title = std::find_if(target_.d_->sheet_title_rel_id_map_.begin(),
@@ -2203,7 +2249,7 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
                 return p.second == worksheet_rel.id();
             })->first;
 
-        auto id = sheet_title_id_map_[title];
+        auto id = sheet_title_id_map_[title]; // 1-indexed
         auto index = sheet_title_index_map_[title];
 
         auto insertion_iter = target_.d_->worksheets_.begin();
@@ -2215,11 +2261,34 @@ void xlsx_consumer::read_office_document(const std::string &content_type) // CT_
 
         current_worksheet_ = &*target_.d_->worksheets_.emplace(insertion_iter, &target_, id, title);
 
+        // If there's any defined names that are worksheet specific, move them here.
+        for (std::size_t i = 0; i < target_.d_->defined_names_.size(); i++)
+        {
+            const auto &name = target_.d_->defined_names_[i];
+            if (name.sheet_id.is_set())
+            {
+                const auto target_id = name.sheet_id.get();
+                if (target_id == index)
+                {
+                    // It's a match, remove it from the workbook and add it to the sheet
+                    current_worksheet_->defined_names_.push_back(name);
+                }
+            }
+            else
+            {
+                // Name is global and belongs to the workbook, if i'ts not already added
+                if (std::find(workbook_names.begin(), workbook_names.end(), name) == workbook_names.end())
+                    workbook_names.push_back(name);
+            }
+        }
+
         if (!streaming_)
         {
             read_part({workbook_rel, worksheet_rel});
         }
     }
+    // Update the workbook with the new defined names
+    target_.d_->defined_names_ = workbook_names;
 }
 
 // Write Workbook Relationship Target Parts

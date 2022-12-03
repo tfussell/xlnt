@@ -435,6 +435,9 @@ void xlsx_producer::write_workbook(const relationship &rel)
     std::size_t num_visible = 0;
     std::vector<defined_name> defined_names;
 
+    defined_names = source_.d_->defined_names_;
+    std::size_t sheet_id = 1;
+
     for (auto ws : source_)
     {
         if (!ws.has_page_setup() || ws.page_setup().sheet_state() == sheet_state::visible)
@@ -444,30 +447,35 @@ void xlsx_producer::write_workbook(const relationship &rel)
         
         auto title_ref = "'" + ws.title() + "'!";
         
+        bool added_auto_filter = false;
+        bool added_print_area = false;
+        bool added_print_titles = false;
         if (ws.has_auto_filter())
         {
             defined_name name;
-            name.sheet_id = ws.id();
+            name.sheet_id = sheet_id;
             name.name = "_xlnm._FilterDatabase";
             name.hidden = true;
             name.value = title_ref + range_reference::make_absolute(ws.auto_filter()).to_string();
             defined_names.push_back(name);
+            added_auto_filter = true;
         }
         
         if (ws.has_print_area())
         {
             defined_name name;
-            name.sheet_id = ws.id();
+            name.sheet_id = sheet_id;
             name.name = "_xlnm.Print_Area";
             name.hidden = false;
             name.value = title_ref + range_reference::make_absolute(ws.print_area()).to_string();
             defined_names.push_back(name);
+            added_print_area = true;
         }
         
         if (ws.has_print_titles())
         {
             defined_name name;
-            name.sheet_id = ws.id();
+            name.sheet_id = sheet_id;
             name.name = "_xlnm.Print_Titles";
             name.hidden = false;
             
@@ -489,7 +497,22 @@ void xlsx_producer::write_workbook(const relationship &rel)
             }
 
             defined_names.push_back(name);
+            added_print_titles = true;
         }
+        // Add any sheet defined names to the vector
+        for (auto &sheet_defined_name : ws.d_->defined_names_)
+        {
+            sheet_defined_name.sheet_id = sheet_id;
+            if (sheet_defined_name.name == "_xlnm._FilterDatabase" && !added_auto_filter)
+                defined_names.push_back(sheet_defined_name);
+            else if (sheet_defined_name.name == "_xlnm.Print_Area" && !added_print_area)
+                defined_names.push_back(sheet_defined_name);
+            else if (sheet_defined_name.name == "_xlnm.Print_Titles" && !added_print_titles)
+                defined_names.push_back(sheet_defined_name);
+            else if (!added_auto_filter && !added_print_area && !added_print_titles)
+                defined_names.push_back(sheet_defined_name);
+        }
+        sheet_id++;
     }
 
     if (num_visible == 0)
@@ -664,11 +687,66 @@ void xlsx_producer::write_workbook(const relationship &rel)
         {
             write_start_element(xmlns, "definedName");
             write_attribute("name", name.name);
-            if (name.hidden)
+
+            if (name.comment.is_set())
             {
-                write_attribute("hidden", write_bool(true));
+                write_attribute("comment", name.comment.get());
             }
-            write_attribute("localSheetId", std::to_string(name.sheet_id - 1)); // 0-indexed for some reason
+
+            if (name.custom_menu.is_set())
+            {
+                write_attribute("customMenu", name.custom_menu.get());
+            }
+
+            if (name.description.is_set())
+            {
+                write_attribute("description", name.description.get());
+            }
+
+            if (name.help.is_set())
+            {
+                write_attribute("help", name.help.get());
+            }
+
+            if (name.status_bar.is_set())
+            {
+                write_attribute("statusBar", name.status_bar.get());
+            }
+
+            if (name.sheet_id.is_set())
+            {
+                write_attribute("localSheetId", std::to_string(name.sheet_id.get() - 1)); // Don't think this is meant to require subtracting 1?
+            }
+
+            if (name.hidden.is_set())
+            {
+                const auto hidden_state = name.hidden.get();
+                if (hidden_state)
+                {
+                    write_attribute("hidden", write_bool(true));
+                }
+            }
+
+            if (name.function.is_set())
+            {
+                const auto function_state = name.function.get();
+                if (function_state)
+                {
+                    write_attribute("function", write_bool(true));
+                }
+            }
+
+            if (name.function_group_id.is_set())
+            {
+                const auto function_group_id = name.function_group_id.get();
+                write_attribute("functionGroupId", std::to_string(function_group_id));
+            }
+
+            if (name.shortcut_key.is_set())
+            {
+                write_attribute("shortcutKey", name.shortcut_key.get());
+            }
+
             write_characters(name.value);
             write_end_element(xmlns, "definedName");
         }

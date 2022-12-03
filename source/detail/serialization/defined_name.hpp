@@ -30,10 +30,63 @@ namespace detail {
 
 struct defined_name
 {
-    std::string name;
-    std::size_t sheet_id;
-    bool hidden;
-    std::string value;
+
+    defined_name &operator=(const defined_name &other)
+    {
+        name = other.name;
+        comment = other.comment;
+        custom_menu = other.custom_menu;
+        description = other.description;
+        help = other.help;
+
+        status_bar = other.status_bar;
+        sheet_id = other.sheet_id;
+        hidden = other.hidden;
+        function = other.function;
+        function_group_id = other.function_group_id;
+
+        shortcut_key = other.shortcut_key;
+        value = other.value;
+
+        return *this;
+    }
+
+    bool operator==(const defined_name &other) const
+    {
+        return name == other.name
+            && comment == other.comment
+            && custom_menu == other.custom_menu
+            && description == other.description
+            && help == other.help
+            && status_bar == other.status_bar
+            && sheet_id == other.sheet_id
+            && hidden == other.hidden
+            && function == other.function
+            && function_group_id == other.function_group_id
+            && shortcut_key == other.shortcut_key
+            && value == other.value;
+    }
+
+    bool operator!=(const defined_name &other) const
+    {
+        return !(*this == other);
+    }
+
+    // Implements (most of) CT_RevisionDefinedName, there's several "old" members in the spec but they're also ignored in other librarie
+    std::string name;                       // A string representing the name for this defined name.
+    optional<std::string> comment;          // A string representing a comment about the defined name.
+    optional<std::string> custom_menu;      // A string representing the new custom menu text
+    optional<std::string> description;      // A string representing the new description text for the defined name.
+    optional<std::string> help;             // A string representing the new help topic text.
+    optional<std::string> status_bar;       // A string representing the new status bar text.
+    optional<std::size_t> sheet_id;         // An integer representing the id of the sheet to which this defined name belongs. This shall be used local defined names only. 0 indexed indexed.
+    optional<bool> hidden;                  // A Boolean value indicating whether the named range is now hidden.
+    optional<bool> function;                // A Boolean value indicating that the defined name refers to a function. True if the defined name is a function, false otherwise.
+    optional<std::size_t> function_group_id;// Represents the new function group id.
+    optional<std::string> shortcut_key;     // Represents the new keyboard shortcut. This is unsigned byte in the spec, but openpyxl uses string so let's try that
+    std::string value;                      // The actual value of the name, ie "='Sheet1'!A1"
+
+    
 };
 
 } // namespace detail

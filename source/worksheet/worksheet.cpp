@@ -1352,4 +1352,51 @@ bool worksheet::is_empty() const
     return d_->cell_map_.empty();
 }
 
+void worksheet::add_defined_name(detail::defined_name name)
+{
+    d_->defined_names_.push_back(name);
+}
+
+std::vector<detail::defined_name> worksheet::get_defined_names() const
+{
+    return d_->defined_names_;
+}
+
+detail::defined_name &worksheet::get_defined_name(const std::size_t index)
+{
+    return d_->defined_names_[index];
+}
+
+detail::defined_name &worksheet::get_defined_name(const std::string &name)
+{
+    // Only return the first matching
+    for (auto &defined_name : d_->defined_names_)
+        if (defined_name.name == name)
+            return defined_name;
+    throw key_not_found();
+}
+
+void worksheet::remove_defined_name(const std::size_t index)
+{
+    d_->defined_names_.erase(d_->defined_names_.begin() + index);
+}
+
+void worksheet::remove_defined_name(const std::string &name)
+{
+    // Only remove first matching
+    std::size_t offending_index = 0;
+    std::size_t index = 0;
+    for (auto &defined_name : d_->defined_names_)
+    {
+        if (defined_name.name == name)
+        {
+            offending_index = index;
+            break;
+        }
+        index++;
+    }
+    if (d_->defined_names_.size() > 0)
+        remove_defined_name(offending_index);
+}
+
 } // namespace xlnt
