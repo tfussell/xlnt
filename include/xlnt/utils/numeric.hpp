@@ -51,7 +51,7 @@ constexpr Number abs(Number val)
 /// constexpr max
 /// </summary>
 template <typename NumberL, typename NumberR>
-constexpr typename std::common_type<NumberL, NumberR>::type max(NumberL lval, NumberR rval)
+constexpr typename std::common_type<NumberL, NumberR>::type (max)(NumberL lval, NumberR rval)
 {
     return (lval < rval) ? rval : lval;
 }
@@ -60,7 +60,7 @@ constexpr typename std::common_type<NumberL, NumberR>::type max(NumberL lval, Nu
 /// constexpr min
 /// </summary>
 template <typename NumberL, typename NumberR>
-constexpr typename std::common_type<NumberL, NumberR>::type min(NumberL lval, NumberR rval)
+constexpr typename std::common_type<NumberL, NumberR>::type (min)(NumberL lval, NumberR rval)
 {
     return (lval < rval) ? lval : rval;
 }
