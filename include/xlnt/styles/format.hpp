@@ -58,6 +58,14 @@ class XLNT_API format
 {
 public:
     /// <summary>
+    /// Default contructor.
+    /// </summary>
+    format()
+	    : d_(nullptr)
+    {		
+    };
+    
+    /// <summary>
     /// Returns the alignment of this format.
     /// </summary>
     class alignment alignment() const;

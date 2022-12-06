@@ -45,6 +45,7 @@ namespace drawing {
 class XLNT_API spreadsheet_drawing
 {
 public:
+    spreadsheet_drawing();
     spreadsheet_drawing(xml::parser &parser);
     void serialize(xml::serializer &serializer);
 
