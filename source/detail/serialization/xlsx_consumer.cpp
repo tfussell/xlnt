@@ -892,7 +892,8 @@ void xlsx_consumer::read_worksheet_sheetdata()
                 break;
             }
             case cell::type::error: {
-                ws_cell_impl->value_text_.plain_text(cell.value, false);
+                ws_cell_impl->value_text_ = std::move(cell.value);
+			    ws_cell_impl->value_text_.get().plain_text(cell.value, false);
                 break;
             }
             }
