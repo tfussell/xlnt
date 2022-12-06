@@ -262,11 +262,13 @@ namespace std {
 template <>
 struct hash<xlnt::cell_reference>
 {
-    size_t operator()(const xlnt::cell_reference &x) const
+    size_t operator()(const xlnt::cell_reference &x) const // using Szudzik's pairing function
     {
-        static_assert(std::is_same<decltype(x.row()), std::uint32_t>::value, "this hash function expects both row and column to be 32-bit numbers");
-        static_assert(std::is_same<decltype(x.column_index()), std::uint32_t>::value, "this hash function expects both row and column to be 32-bit numbers");
-        return hash<std::uint64_t>{}(x.row() | static_cast<std::uint64_t>(x.column_index()) << 32);
+		if (x.column_index() >= x.row()) {
+			return hash<size_t>{}(x.column_index() * x.column_index() + x.column_index() + x.row());
+		} else {
+			return hash<size_t>{}(x.column_index() + x.row() * x.row());
+		};
     }
 };
 } // namespace std
