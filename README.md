@@ -36,5 +36,17 @@ int main()
 
 Documentation for the current release of xlnt is available [here](https://tfussell.gitbooks.io/xlnt/content/).
 
+## Building xlnt - Using vcpkg
+
+You can download and install xlnt using the [vcpkg](https://github.com/microsoft/vcpkg) dependency manager:
+
+    git clone https://github.com/microsoft/vcpkg.git
+    cd vcpkg
+    ./bootstrap-vcpkg.sh
+    ./vcpkg integrate install
+    ./vcpkg install xlnt
+
+The xlnt port in vcpkg is kept up to date by Microsoft team members and community contributors. If the version is out of date, please [create an issue or pull request](https://github.com/microsoft/vcpkg) on the vcpkg repository.
+
 ## License
 xlnt is released to the public for free under the terms of the MIT License. See [LICENSE.md](https://github.com/tfussell/xlnt/blob/master/LICENSE.md) for the full text of the license and the licenses of xlnt's third-party dependencies. [LICENSE.md](https://github.com/tfussell/xlnt/blob/master/LICENSE.md) should be distributed alongside any assemblies that use xlnt in source or compiled form.
