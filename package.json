@@ -8,8 +8,8 @@
     "test": "tests"
   },
   "devDependencies": {
-    "@release-it/bumper": "^3.0.1",
-    "release-it": "^14.11.5"
+    "@release-it/bumper": "^4.0.2",
+    "release-it": "^15.6.0"
   },
   "scripts": {
     "release": "release-it"
