@@ -56,6 +56,7 @@ rich_text &rich_text::operator=(const rich_text &rhs)
     runs_ = rhs.runs_;
     phonetic_runs_ = rhs.phonetic_runs_;
     phonetic_properties_ = rhs.phonetic_properties_;
+    unique_index = rhs.unique_index;
     return *this;
 }
 
@@ -69,6 +70,7 @@ void rich_text::clear()
     runs_.clear();
     phonetic_runs_.clear();
     phonetic_properties_.clear();
+    unique_index = 0;
 }
 
 void rich_text::plain_text(const std::string &s, bool preserve_space = false)
@@ -151,7 +153,7 @@ bool rich_text::operator==(const rich_text &rhs) const
 
     if (phonetic_properties_ != rhs.phonetic_properties_) return false;
 
-    return true;
+    return unique_index == rhs.unique_index;
 }
 
 bool rich_text::operator==(const std::string &rhs) const

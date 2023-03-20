@@ -2270,10 +2270,12 @@ void xlsx_consumer::read_shared_string_table()
         unique_count = parser().attribute<std::size_t>("uniqueCount");
     }
 
+    size_t unique_index = 0;
     while (in_element(qn("spreadsheetml", "sst")))
     {
         expect_start_element(qn("spreadsheetml", "si"), xml::content::complex);
         auto rt = read_rich_text(qn("spreadsheetml", "si"));
+        rt.unique_index = unique_index++;
         target_.add_shared_string(rt, true);
         expect_end_element(qn("spreadsheetml", "si"));
     }
