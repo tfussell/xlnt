@@ -151,6 +151,8 @@ public:
     /// </summary>
     bool operator!=(const std::string &rhs) const;
 
+    std::size_t unique_index{0};
+
 private:
     /// <summary>
     /// The runs that make up this rich text.
@@ -171,6 +173,7 @@ public:
         {
             res ^= std::hash<std::string>()(r.first);
         }
+        res ^= std::hash<std::string>()(std::to_string(k.unique_index));
 
         return res;
     }
