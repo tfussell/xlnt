@@ -24,6 +24,7 @@
 #pragma once
 
 #include <string>
+#include <cstdint>
 
 #include <xlnt/xlnt_config.hpp>
 
