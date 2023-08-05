@@ -24,6 +24,7 @@
 #pragma once
 
 #include <string>
+#include <cstdint>
 
 #include <xlnt/xlnt_config.hpp>
 
@@ -35,8 +36,8 @@ namespace xlnt {
 struct XLNT_API phonetic_run
 {
     std::string text;
-    uint32_t start;
-    uint32_t end;
+    std::uint32_t start;
+    std::uint32_t end;
     bool preserve_space;
 
     bool operator==(const phonetic_run &other) const;
