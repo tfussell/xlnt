@@ -39,6 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 #include <memory>
 #include <unordered_map>
 #include <vector>
+#include <cstdint>
 
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/utils/path.hpp>

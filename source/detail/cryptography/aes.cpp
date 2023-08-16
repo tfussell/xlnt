@@ -27,6 +27,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cstdint>
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>

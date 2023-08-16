@@ -21,6 +21,8 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#include <cstdint>
+
 #include <xlnt/utils/variant.hpp>
 #include <helpers/test_suite.hpp>
 

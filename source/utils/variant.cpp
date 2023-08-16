@@ -21,6 +21,8 @@
 // @license: http://www.opensource.org/licenses/mit-license.php
 // @author: see AUTHORS file
 
+#include <cstdint>
+
 #include <xlnt/utils/datetime.hpp>
 #include <xlnt/utils/variant.hpp>
 
@@ -42,7 +44,7 @@ variant::variant(const char *value)
 {
 }
 
-variant::variant(int32_t value)
+variant::variant(std::int32_t value)
     : type_(type::i4),
       i4_value_(value)
 {

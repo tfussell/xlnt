@@ -29,6 +29,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <cstdint>
 
 #include <detail/binary.hpp>
 #include <detail/unicode.hpp>

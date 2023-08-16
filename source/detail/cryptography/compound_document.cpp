@@ -29,6 +29,7 @@
 #include <locale>
 #include <string>
 #include <vector>
+#include <cstdint>
 
 #include <xlnt/utils/exceptions.hpp>
 #include <detail/binary.hpp>

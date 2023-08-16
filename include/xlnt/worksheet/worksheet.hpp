@@ -29,6 +29,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <cstdint>
 
 #include <xlnt/xlnt_config.hpp>
 #include <xlnt/cell/index_types.hpp>
