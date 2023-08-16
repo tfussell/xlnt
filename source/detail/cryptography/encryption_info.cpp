@@ -22,6 +22,7 @@
 // @author: see AUTHORS file
 
 #include <array>
+#include <cstdint>
 
 #include <detail/binary.hpp>
 #include <detail/cryptography/aes.hpp>

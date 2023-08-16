@@ -26,6 +26,7 @@
 #include <string>
 #include <type_traits>
 #include <unordered_set>
+#include <cstdint>
 
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/hyperlink.hpp>

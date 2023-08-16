@@ -22,6 +22,7 @@
 // @author: see AUTHORS file
 
 #include <exception>
+#include <cstdint>
 #include <arrow/api.h>
 #include <arrow/python/pyarrow.h>
 #include <pybind11/pybind11.h>

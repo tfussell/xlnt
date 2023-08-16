@@ -27,6 +27,7 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <cstdint>
 
 #include <detail/cryptography/sha.hpp>
 

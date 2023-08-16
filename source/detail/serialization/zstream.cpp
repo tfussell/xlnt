@@ -43,6 +43,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 #include <iterator> // for std::back_inserter
 #include <stdexcept>
 #include <string>
+#include <cstdint>
 #include <miniz.h>
 
 #include <xlnt/utils/exceptions.hpp>

@@ -26,6 +26,7 @@
 #include <numeric> // for std::accumulate
 #include <sstream>
 #include <unordered_map>
+#include <cstdint>
 
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/cell/comment.hpp>
