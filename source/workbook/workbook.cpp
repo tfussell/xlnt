@@ -823,6 +823,9 @@ worksheet workbook::copy_sheet(worksheet to_copy)
 
 worksheet workbook::copy_sheet(worksheet to_copy, std::size_t index)
 {
+    if (index > d_->worksheets_.size())
+        throw invalid_parameter();
+
     copy_sheet(to_copy);
 
     if (index != d_->worksheets_.size() - 1)
@@ -1091,6 +1094,11 @@ void workbook::remove_sheet(worksheet ws)
 
 worksheet workbook::create_sheet(std::size_t index)
 {
+    if (index > d_->worksheets_.size())
+    {
+        throw invalid_parameter();
+    }
+
     create_sheet();
 
     if (index != d_->worksheets_.size() - 1)
