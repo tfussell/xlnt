@@ -823,6 +823,9 @@ worksheet workbook::copy_sheet(worksheet to_copy)
 
 worksheet workbook::copy_sheet(worksheet to_copy, std::size_t index)
 {
+    if (index > d_->worksheets_.size())
+        throw invalid_parameter();
+
     copy_sheet(to_copy);
 
     if (index != d_->worksheets_.size() - 1)
