@@ -1091,6 +1091,11 @@ void workbook::remove_sheet(worksheet ws)
 
 worksheet workbook::create_sheet(std::size_t index)
 {
+    if (index > d_->worksheets_.size())
+    {
+        throw invalid_parameter();
+    }
+
     create_sheet();
 
     if (index != d_->worksheets_.size() - 1)
