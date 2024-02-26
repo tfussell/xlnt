@@ -25,6 +25,7 @@
 
 #include <string>
 #include <vector>
+#include <cstdint>
 
 #include <xlnt/xlnt_config.hpp>
 
