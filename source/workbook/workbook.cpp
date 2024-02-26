@@ -28,6 +28,8 @@
 #include <functional>
 #include <set>
 
+#include <codecvt>
+
 #include <xlnt/cell/cell.hpp>
 #include <xlnt/packaging/manifest.hpp>
 #include <xlnt/packaging/relationship.hpp>

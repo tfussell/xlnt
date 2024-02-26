@@ -176,6 +176,11 @@ public:
     /// </summary>
     const cell operator[](std::size_t column_index) const;
 
+    /// <summary>
+    /// Returns true if this sheet has an initialized cell at the given cell_index.
+    /// </summary>
+    bool has_cell(std::size_t cell_index) const;
+
 private:
     /// <summary>
     /// The worksheet this vector points to cells from
