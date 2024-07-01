@@ -447,6 +447,7 @@ void xlsx_producer::write_workbook(const relationship &rel)
         if (ws.has_auto_filter())
         {
             defined_name name;
+            name.has_sheet_id = true;
             name.sheet_id = ws.id();
             name.name = "_xlnm._FilterDatabase";
             name.hidden = true;
@@ -457,6 +458,7 @@ void xlsx_producer::write_workbook(const relationship &rel)
         if (ws.has_print_area())
         {
             defined_name name;
+            name.has_sheet_id = true;
             name.sheet_id = ws.id();
             name.name = "_xlnm.Print_Area";
             name.hidden = false;
@@ -467,6 +469,7 @@ void xlsx_producer::write_workbook(const relationship &rel)
         if (ws.has_print_titles())
         {
             defined_name name;
+            name.has_sheet_id = true;
             name.sheet_id = ws.id();
             name.name = "_xlnm.Print_Titles";
             name.hidden = false;
@@ -668,7 +671,10 @@ void xlsx_producer::write_workbook(const relationship &rel)
             {
                 write_attribute("hidden", write_bool(true));
             }
-            write_attribute("localSheetId", std::to_string(name.sheet_id - 1)); // 0-indexed for some reason
+            if (name.has_sheet_id)
+            {
+                write_attribute("localSheetId", std::to_string(name.sheet_id - 1)); // 0-indexed for some reason
+            }
             write_characters(name.value);
             write_end_element(xmlns, "definedName");
         }

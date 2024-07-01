@@ -31,8 +31,13 @@ namespace detail {
 struct defined_name
 {
     std::string name;
+
+    // Replace this with std::optional as soon as xlnt is upgraded to C++17.
+    bool has_sheet_id;
     std::size_t sheet_id;
+
     bool hidden;
+
     std::string value;
 };
 
