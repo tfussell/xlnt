@@ -36,7 +36,7 @@ namespace {
 
 const std::unordered_map<std::size_t, xlnt::number_format> &builtin_formats()
 {
-    static std::unordered_map<std::size_t, xlnt::number_format> formats;
+    thread_local static std::unordered_map<std::size_t, xlnt::number_format> formats;
 
     if (formats.size() == 0)
     {
