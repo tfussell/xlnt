@@ -25,6 +25,10 @@ jobs:
         type: string
     steps:
       - checkout
+      - run: apt-get update -y
+      - run: apt-get install -y --no-install-recommends locales
+      - run: sed -i '/^# de_DE /s/^# //' /etc/locale.gen
+      - run: locale-gen
       - run: git submodule update --init --recursive
       - run: cmake -D XLNT_CXX_LANG=<< parameters.cxx-ver >> -D STATIC=<< parameters.static >> -D BENCHMARKS=<< parameters.benchmarks >> -D TESTS=ON -D SAMPLES=<< parameters.samples >> -D COVERAGE=<< parameters.coverage >> -D CMAKE_BUILD_TYPE=<< parameters.build-type >> .
       - run: cmake --build . -- -j2
