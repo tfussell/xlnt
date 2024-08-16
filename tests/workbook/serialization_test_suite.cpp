@@ -71,6 +71,7 @@ public:
         register_test(test_Issue445_inline_str_streaming_read);
         register_test(test_Issue492_stream_empty_row);
         register_test(test_Issue503_external_link_load);
+        register_test(test_Issue735_wrong_count);
         register_test(test_formatting);
         register_test(test_active_sheet);
     }
@@ -761,6 +762,13 @@ public:
         auto ws = wb.active_sheet();
         auto cell = ws.cell("A1");
         xlnt_assert_equals(cell.value<std::string>(), std::string("WDG_IC_00000003.aut"));
+    }
+
+    void test_Issue735_wrong_count()
+    {
+        xlnt::workbook wb;
+        wb.load(path_helper::test_file("Issue735_wrong_count.xlsx"));
+        xlnt_assert_throws_nothing(wb.active_sheet());
     }
     
     void test_formatting()

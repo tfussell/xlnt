@@ -55,6 +55,14 @@ struct XLNT_API constants
     static const column_t max_column();
 
     /// <summary>
+    /// Returns the maximum amount of elements that functions like std::vector::reserve (or other containers) are allowed to allocate.
+    /// Information like a "count" is often saved in XLSX files and can be used by std::vector::reserve (or other containers)
+    /// to allocate the memory right away and thus improve performance. However, malicious or broken files
+    /// might then cause XLNT to allocate extreme amounts of memory. This function sets a limit to protect against such issues.
+    /// </summary>
+    static const size_t max_elements_for_reserve();
+
+    /// <summary>
     /// Returns the URI of the directory containing package properties.
     /// </summary>
     static const path package_properties();

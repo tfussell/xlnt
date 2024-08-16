@@ -49,6 +49,11 @@ const column_t constants::max_column()
     return column_t(std::numeric_limits<column_t::index_t>::max());
 }
 
+const size_t constants::max_elements_for_reserve()
+{
+    return 10000;
+}
+
 // constants
 const path constants::package_properties()
 {
