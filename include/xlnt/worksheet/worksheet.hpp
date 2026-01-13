@@ -793,6 +793,11 @@ public:
     /// </summary>
     bool is_empty() const;
 
+    /// <summary>
+    /// Configure outline settings
+    /// </summary>
+    void outline_settings(bool visible, bool symbols_below, bool symbols_right, bool auto_style);
+
 private:
     friend class cell;
     friend class const_range_iterator;

@@ -70,6 +70,16 @@ public:
     /// and not used when saving, it is calculated in the xlsx_producer.
     /// </summary>
     optional<std::string> spans;
+
+    /// <summary>
+    /// Whether or not the row should be collapsed
+    /// </summary>
+    optional<bool> collapsed;
+
+    /// <summary>
+    /// The outline level of the row
+    /// </summary>
+    optional<int> outline_level;
 };
 
 inline bool operator==(const row_properties &lhs, const row_properties &rhs)
@@ -80,7 +90,9 @@ inline bool operator==(const row_properties &lhs, const row_properties &rhs)
         && lhs.hidden == rhs.hidden
         && lhs.custom_format == rhs.custom_format
         && lhs.style == rhs.style
-        && lhs.spans == rhs.spans;
+        && lhs.spans == rhs.spans
+        && lhs.collapsed == rhs.collapsed
+        && lhs.outline_level == rhs.outline_level;
 }
 
 } // namespace xlnt

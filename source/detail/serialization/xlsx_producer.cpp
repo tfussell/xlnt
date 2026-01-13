@@ -2342,8 +2342,33 @@ void xlsx_producer::write_worksheet(const relationship &rel)
         }
         // outlinePr is optional in the spec but is being written every time?
         write_start_element(xmlns, "outlinePr");
-        write_attribute("summaryBelow", "1");
-        write_attribute("summaryRight", "1");
+        if (props.summary_below.is_set())
+        {
+            write_attribute("summaryBelow", write_bool(props.summary_below.get()));
+        }
+        else
+        {
+            write_attribute("summaryBelow", "1");
+        }
+
+        if (props.summary_right.is_set())
+        {
+            write_attribute("summaryRight", write_bool(props.summary_right.get()));
+        }
+        else
+        {
+            write_attribute("summaryRight", "1");
+        }
+
+        if (props.apply_styles.is_set())
+        {
+            write_attribute("applyStyles", write_bool(props.apply_styles.get()));
+        }
+
+        if (props.show_outline_symbols.is_set())
+        {
+            write_attribute("showOutlineSymbols", write_bool(props.show_outline_symbols.get()));
+        }
         write_end_element(xmlns, "outlinePr");
 
         if (ws.has_page_setup())

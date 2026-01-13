@@ -1342,6 +1342,20 @@ void worksheet::format_properties(const sheet_format_properties &properties)
     d_->format_properties_ = properties;
 }
 
+void worksheet::outline_settings(bool visible, bool symbols_below, bool symbols_right, bool auto_style)
+{
+    if (!d_->sheet_properties_.is_set())
+    {
+        d_->sheet_properties_ = sheet_pr();
+    }
+
+    auto &props = d_->sheet_properties_.get();
+    props.show_outline_symbols.set(visible);
+    props.summary_below.set(symbols_below);
+    props.summary_right.set(symbols_right);
+    props.apply_styles.set(auto_style);
+}
+
 bool worksheet::has_drawing() const
 {
     return d_->drawing_.is_set();

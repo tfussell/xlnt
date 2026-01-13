@@ -318,6 +318,14 @@ std::pair<xlnt::row_properties, int> parse_row(xml::parser *parser, xlnt::detail
         {
             props.first.custom_height = is_true(attr.second.value.c_str());
         }
+        else if (string_equal(attr.first.name(), "collapsed"))
+        {
+            props.first.collapsed = is_true(attr.second.value);
+        }
+        else if (string_equal(attr.first.name(), "outlineLevel"))
+        {
+            props.first.outline_level = converter.deserialise(attr.second.value);
+        }
     }
 
     int level = 1;
@@ -590,10 +598,22 @@ std::string xlsx_consumer::read_worksheet_begin(const std::string &rel_id)
                 }
                 else if (sheet_pr_child_element == qn("spreadsheetml", "outlinePr")) // CT_OutlinePr 0-1
                 {
-                    skip_attribute("applyStyles"); // optional, boolean, false
-                    skip_attribute("summaryBelow"); // optional, boolean, true
-                    skip_attribute("summaryRight"); // optional, boolean, true
-                    skip_attribute("showOutlineSymbols"); // optional, boolean, true
+                    if (parser().attribute_present("applyStyles"))
+                    {
+                        props.apply_styles.set(is_true(parser().attribute("applyStyles")));
+                    }
+                    if (parser().attribute_present("summaryBelow"))
+                    {
+                        props.summary_below.set(is_true(parser().attribute("summaryBelow")));
+                    }
+                    if (parser().attribute_present("summaryRight"))
+                    {
+                        props.summary_right.set(is_true(parser().attribute("summaryRight")));
+                    }
+                    if (parser().attribute_present("showOutlineSymbols"))
+                    {
+                        props.show_outline_symbols.set(is_true(parser().attribute("showOutlineSymbols")));
+                    }
                 }
                 else if (sheet_pr_child_element == qn("spreadsheetml", "pageSetUpPr")) // CT_PageSetUpPr 0-1
                 {
@@ -1422,8 +1442,18 @@ bool xlsx_consumer::has_cell()
             row_properties.spans = parser().attribute("spans");
         }
 
+        if (parser().attribute_present("outlineLevel"))
+        {
+            row_properties.outline_level = parser().attribute<int>("outlineLevel");
+        }
+
+        if (parser().attribute_present("collapsed"))
+        {
+            row_properties.collapsed = is_true(parser().attribute("collapsed"));
+        }
+
         skip_attributes({"customFormat", "s", "customFont",
-            "outlineLevel", "collapsed", "thickTop", "thickBot",
+            "thickTop", "thickBot",
             "ph"});
     }
 
