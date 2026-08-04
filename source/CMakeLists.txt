@@ -297,8 +297,8 @@ endif()
 
 if(NOT MSVC)
   # Set pkg-config variables
-  set(PKG_CONFIG_LIBDIR ${XLNT_LIB_DEST_DIR})
-  set(PKG_CONFIG_INCLUDEDIR ${XLNT_INC_DEST_DIR})
+  set(PKG_CONFIG_LIBDIR "${CMAKE_INSTALL_PREFIX}/${XLNT_LIB_DEST_DIR}")
+  set(PKG_CONFIG_INCLUDEDIR "${CMAKE_INSTALL_PREFIX}/${XLNT_INC_DEST_DIR}")
   set(PKG_CONFIG_LIBS "-L\${libdir} -lxlnt")
   set(PKG_CONFIG_CFLAGS "-I\${includedir}")
 
